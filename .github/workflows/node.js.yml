@@ -26,5 +26,17 @@ jobs:
     - run: npm ci
 
     - run: npm run build
+    
+    # Start the app in the background
+    - name: Start the app in the background
+      run: npm run start &
+    
+    # Wait for the app to be available on port 3000
+    - name: Wait for the app to be ready
+      run: npx wait-on http://localhost:3000
+
+    # Check if the app is up by making a request
+    - name: Health check
+      run: curl -f http://localhost:3000 || exit 1
 
     # - run: npm test
