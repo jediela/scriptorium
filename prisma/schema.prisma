@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  password    String
+  firstName   String
+  lastName    String
+  avatar      String?
+  phoneNumber String?
+  role        String
+
+  // Relationships
+  codeTemplates  CodeTemplate[]
+  blogs          Blog[]
+  comments       Comment[]
+  reports        Report[]
+  codeExecutions CodeExecution[]
+}
+
+model CodeTemplate {
+  id          Int      @id @default(autoincrement())
+  title       String
+  explanation String
+  code        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  comments Comment[]
+
+  Blog Blog[]
+}
+
+model Blog {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  content     String
+  votes       Int      @default(0)
+  reportsNum  Int      @default(0)
+  isHidden    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  codeTemplate   CodeTemplate? @relation(fields: [codeTemplateId], references: [id])
+  codeTemplateId Int?
+
+  comments Comment[]
+
+  Report Report[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  votes     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  codeTemplate   CodeTemplate? @relation(fields: [codeTemplateId], references: [id])
+  codeTemplateId Int?
+
+  blogPost   Blog? @relation(fields: [blogPostId], references: [id])
+  blogPostId Int?
+
+  Report Report[]
+}
+
+model Report {
+  id        Int      @id @default(autoincrement())
+  reason    String
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  blogPost   Blog? @relation(fields: [blogPostId], references: [id])
+  blogPostId Int?
+
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId Int?
+}
+
+model CodeExecution {
+  id        Int      @id @default(autoincrement())
+  language  String
+  code      String
+  input     String?
+  output    String?
+  error     String?
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+}
