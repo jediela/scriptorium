@@ -76,6 +76,7 @@ model Comment {
   content   String
   votes     Int      @default(0)
   createdAt DateTime @default(now())
+  isHidden  Boolean  @default(false)
 
   // Relationships
   user   User @relation(fields: [userId], references: [id])
