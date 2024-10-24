@@ -41,22 +41,22 @@ model CodeTemplate {
   updatedAt   DateTime @updatedAt
 
   // Relationships
-  user        User @relation(fields: [userId], references: [id])
-  userId      Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  forkedFrom  CodeTemplate? @relation("ForkRelation", fields: [forkedFromId], references: [id])
+  forkedFrom   CodeTemplate?  @relation("ForkRelation", fields: [forkedFromId], references: [id])
   forkedFromId Int?
-  forks       CodeTemplate[] @relation("ForkRelation")
-  tags        Tag[]
-  blogs       Blog[]
-  comments    Comment[]
+  forks        CodeTemplate[] @relation("ForkRelation")
+  tags         Tag[]
+  blogs        Blog[]
+  comments     Comment[]
 }
 
 model Tag {
-  id             Int             @id @default(autoincrement())
-  name           String          @unique
-  codeTemplates  CodeTemplate[]
-  blogs          Blog[]
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  codeTemplates CodeTemplate[]
+  blogs         Blog[]
 }
 
 model Blog {
@@ -71,13 +71,13 @@ model Blog {
   updatedAt   DateTime @updatedAt
 
   // Relationships
-  user            User @relation(fields: [userId], references: [id])
-  userId          Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  codeTemplates   CodeTemplate[]
-  comments        Comment[]
-  tags            Tag[]
-  reports         Report[]
+  codeTemplates CodeTemplate[]
+  comments      Comment[]
+  tags          Tag[]
+  reports       Report[]
 }
 
 model Comment {
@@ -88,21 +88,21 @@ model Comment {
   isHidden  Boolean  @default(false)
 
   // Relationships
-  user            User @relation(fields: [userId], references: [id])
-  userId          Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  codeTemplate    CodeTemplate? @relation(fields: [codeTemplateId], references: [id])
-  codeTemplateId  Int?
+  codeTemplate   CodeTemplate? @relation(fields: [codeTemplateId], references: [id])
+  codeTemplateId Int?
 
-  blogPost        Blog? @relation(fields: [blogPostId], references: [id])
-  blogPostId      Int?
+  blogPost   Blog? @relation(fields: [blogPostId], references: [id])
+  blogPostId Int?
 
-  parentComment   Comment?    @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  parentComment   Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id])
   parentCommentId Int?
 
-  replies         Comment[]   @relation("CommentReplies")
+  replies Comment[] @relation("CommentReplies")
 
-  reports         Report[]
+  reports Report[]
 }
 
 model Report {
