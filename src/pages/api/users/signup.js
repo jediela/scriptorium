@@ -16,31 +16,40 @@ export default async function handler(req, res) {
   }
 
   // Email uniqueness check
-  const emailExists = await prisma.user.findUnique({
-    where: { email }
-  });
+  let emailExists;
+  try {
+    emailExists = await prisma.user.findUnique({
+      where: { email }
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Error finding user." });
+  }
 
   if (emailExists){
     return res.status(409).json({ error: "Email already in use" });
   }
 
   // Create user
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: await hashPassword(password),
-      firstName,
-      lastName,
-      avatar,
-      phoneNumber,
-      isAdmin,
-    },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
-  res.status(200).json(user);
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: await hashPassword(password),
+        firstName,
+        lastName,
+        avatar,
+        phoneNumber,
+        isAdmin,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+    res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json({ error: "Error creating user." });
+  }
 }

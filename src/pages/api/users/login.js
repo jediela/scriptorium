@@ -16,18 +16,18 @@ export default async function handler(req, res) {
     }
     
     // Find user by email
-    const user = await prisma.user.findUnique({
-        where: { email }
-    });
-
-    // Check if user exists
-    if (!user){
-        return res.status(404).json({ error: "User does not exist" });
+    let user;
+    try {
+        user = await prisma.user.findUnique({
+            where: { email }
+        });   
+    } catch (error) {
+        return res.status(500).json({ error: "Error finding user." });
     }
 
-    // Check if password is correct
-    if (!(await comparePassword(password, user.password))){
-        return res.status(401).json({ error: "Invalid password" });
+    // Check valid credentials
+    if (!user || !(await comparePassword(password, user.password))){
+        return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const token = generateToken({ userId: user.id, email: user.email });
