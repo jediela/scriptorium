@@ -1,12 +1,21 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import prisma from "./db";
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const BCRYPT_SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+
+export const hashPassword = async (password) => {
+  return await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+};
+
+export const comparePassword = async (password, hash) => {
+  return await bcrypt.compare(password, hash);
+};
 
 export const generateToken = (user) => {
-  return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
 export const authenticate = async (req, res, next) => {
