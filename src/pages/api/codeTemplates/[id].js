@@ -1,8 +1,6 @@
 import prisma from "@/utils/db"
 import authenticate from '@/utils/auth';
 
-const prisma = new PrismaClient();
-
 export default async function handler(req, res) {
   const { id } = req.query;
 
@@ -112,7 +110,7 @@ async function deleteTemplate(req, res, id) {
       if (template.authorId !== req.user.id) {
         return res.status(403).json({ error: 'Forbidden' });
       }
-      
+
       // delete code template
       await prisma.codeTemplate.delete({ where: { id: parseInt(id) } });
 
