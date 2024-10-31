@@ -15,7 +15,7 @@ export const comparePassword = async (password, hash) => {
 };
 
 export const generateToken = (user) => {
-  return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ userId: user.userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
 export const authenticate = async (req, res) => {
@@ -35,7 +35,7 @@ export const authenticate = async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
     
-    req.user = user;
+    return user;
   } catch (err) {
     return res.status(401).json({ error: "Invalid Token" });
   }
