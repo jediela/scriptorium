@@ -1,12 +1,12 @@
 import prisma from "@/utils/db"
-import authenticate from '@/utils/auth';
+import { authenticate } from '@/utils/auth';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // Viewing and Searching Templates (User Story 7)
+    // view and search template
     return getTemplates(req, res);
   } else if (req.method === 'POST') {
-    // Saving Code as Templates (User Story 6)
+    // save template
     return createTemplate(req, res);
   } else {
     res.setHeader('Allow', ['GET', 'POST']);
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 }
 
-// GET /api/templates
+// GET template
 async function getTemplates(req, res) {
   const { search, tags, page = 1, limit = 10, userId } = req.query;
   const skip = (page - 1) * limit;
@@ -75,9 +75,8 @@ async function getTemplates(req, res) {
   }
 }
 
-// POST /api/templates
+// POST
 async function createTemplate(req, res) {
-  // Authenticate the user
   return authenticate(req, res, async () => {
     const { title, explanation, code, tags, isFork, forkedFromId } = req.body;
 
@@ -86,7 +85,6 @@ async function createTemplate(req, res) {
     }
 
     try {
-      // Handle tags
       let tagRecords = [];
       if (tags && tags.length > 0) {
         tagRecords = await Promise.all(
