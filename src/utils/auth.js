@@ -18,24 +18,25 @@ export const generateToken = (user) => {
   return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-export const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res) => {
   const authHeader = req.headers.authorization;
+  
+  if (!authHeader) {
+    return res.status(401).json({ error: "Authorization header missing" });
+  }
 
-  if (authHeader) {
-    const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
 
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-      if (!user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      req.user = user;
-      next();
-    } catch (err) {
-      return res.status(401).json({ error: 'Invalid Token' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
-  } else {
-    return res.status(401).json({ error: 'Authorization header missing' });
+    
+    req.user = user;
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid Token" });
   }
 };
