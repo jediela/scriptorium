@@ -29,6 +29,7 @@ model User {
   comments       Comment[]
   reports        Report[]
   codeExecutions CodeExecution[]
+  Vote           Vote[]
 }
 
 model CodeTemplate {
@@ -60,14 +61,13 @@ model Tag {
 }
 
 model Blog {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  votes       Int      @default(0)
-  reportsNum  Int      @default(0)
-  isHidden    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  reportsNum Int      @default(0)
+  isHidden   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relationships
   user   User @relation(fields: [userId], references: [id])
@@ -77,12 +77,12 @@ model Blog {
   comments      Comment[]
   tags          Tag[]
   reports       Report[]
+  Vote          Vote[]
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
   content   String
-  votes     Int      @default(0)
   createdAt DateTime @default(now())
   isHidden  Boolean  @default(false)
 
@@ -102,6 +102,7 @@ model Comment {
   replies Comment[] @relation("CommentReplies")
 
   reports Report[]
+  Vote    Vote[]
 }
 
 model Report {
@@ -132,4 +133,18 @@ model CodeExecution {
   // Relationships
   user   User @relation(fields: [userId], references: [id])
   userId Int
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  blog      Blog?    @relation(fields: [blogId], references: [id])
+  blogId    Int?
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  commentId Int?
+  value     Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, blogId, commentId])
 }
