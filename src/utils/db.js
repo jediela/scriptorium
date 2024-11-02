@@ -36,3 +36,29 @@ export async function getComment(commentId) {
         throw new Error("Error retrieving comment.");
     }
 }
+
+export async function getVote(voteId) {
+    try {
+        const vote = await prisma.vote.findUnique({
+            where: { id: Number(voteId) }
+        });
+        return vote;
+    } catch (error) {
+        throw new Error("Error retrieving vote.");
+    }
+}
+
+// True if user has voted, false they haven't voted
+export async function checkVotedBlog(userId, blogId) {
+    try {
+        const existingVote = await prisma.vote.findFirst({
+            where: {
+                userId: userId,
+                blogId: blogId,
+            },
+        });
+        return existingVote;
+    } catch (error) {
+        throw new Error("Error retrieving vote info.");
+    }
+}

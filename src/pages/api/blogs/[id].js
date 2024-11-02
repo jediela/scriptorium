@@ -2,9 +2,9 @@ import prisma from "@/utils/db"
 import { authenticate } from "@/utils/auth";
 
 export default async function handler(req, res) {
-    let user = await authenticate(req, res);
+    const user = await authenticate(req, res);
     if (!user) {
-        return;
+        return res.status(401).json({ error: "Unauthorized: You need to be logged in to perform this action." });
     }
 
     let { id } = req.query;
@@ -73,7 +73,6 @@ export default async function handler(req, res) {
 
     // Delete Blog
     else if (req.method === "DELETE"){
-        console.log(blog.title);
         try {
             // Delete comments related to given blogId
             await prisma.comment.deleteMany({
@@ -81,6 +80,10 @@ export default async function handler(req, res) {
             });
             // Delete reports related to given blogId
             await prisma.report.deleteMany({
+                where: { blogPostId: id },
+            });
+            // Delete votes related to given blogId
+            await prisma.vote.deleteMany({
                 where: { blogPostId: id },
             });
             // Delete blog
