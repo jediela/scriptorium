@@ -3,18 +3,18 @@ import { authenticate } from '@/utils/auth';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    // view and search template
-    return getTemplates(req, res);
+    // view and search templates
+    await getTemplates(req, res);
   } else if (req.method === 'POST') {
-    // save template
-    return createTemplate(req, res);
+    // create a template
+    await createTemplate(req, res);
   } else {
     res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
 
-// GET template
+// get template (GET)
 async function getTemplates(req, res) {
   const { search, tags, page = 1, limit = 10, userId } = req.query;
   const skip = (page - 1) * limit;
@@ -50,17 +50,13 @@ async function getTemplates(req, res) {
       skip,
       take,
       include: {
-        user: {
-          select: { id: true, firstName: true, lastName: true },
-        },
+        user: { select: { id: true, firstName: true, lastName: true } },
         tags: true,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return res.status(200).json({
+    res.status(200).json({
       templates,
       pagination: {
         page: parseInt(page),
@@ -71,58 +67,63 @@ async function getTemplates(req, res) {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Failed to fetch templates' });
+    res.status(500).json({ error: 'Failed to fetch templates' });
   }
 }
 
-// POST
+// create template (POST)
 async function createTemplate(req, res) {
-  return authenticate(req, res, async () => {
-    const { title, explanation, code, tags, isFork, forkedFromId } = req.body;
+  const user = await authenticate(req, res);
+  if (!user) {
+    return;
+  }
 
-    if (!title || !code) {
-      return res.status(400).json({ error: 'Title and code are required' });
+  const { title, explanation, code, tags, isFork, forkedFromId } = req.body;
+
+  if (!title || !code) {
+    res.status(400).json({ error: 'Title and code are required' });
+    return;
+  }
+
+  try {
+    // tag handler
+    let tagRecords = [];
+    if (tags && tags.length > 0) {
+      tagRecords = await Promise.all(
+        tags.map(async (tagName) => {
+          tagName = tagName.trim().toLowerCase();
+          let tag = await prisma.tag.findUnique({ where: { name: tagName } });
+          if (!tag) {
+            tag = await prisma.tag.create({ data: { name: tagName } });
+          }
+          return tag;
+        })
+      );
     }
 
-    try {
-      let tagRecords = [];
-      if (tags && tags.length > 0) {
-        tagRecords = await Promise.all(
-          tags.map(async (tagName) => {
-            tagName = tagName.trim().toLowerCase();
-            let tag = await prisma.tag.findUnique({ where: { name: tagName } });
-            if (!tag) {
-              tag = await prisma.tag.create({ data: { name: tagName } });
-            }
-            return tag;
-          })
-        );
-      }
+    const data = {
+      title,
+      explanation,
+      code,
+      isFork: isFork || false,
+      user: { connect: { id: user.id } },
+      tags: {
+        connect: tagRecords.map((tag) => ({ id: tag.id })),
+      },
+    };
 
-      const data = {
-        title,
-        explanation,
-        code,
-        isFork: isFork || false,
-        user: { connect: { id: req.user.id } },
-        tags: {
-          connect: tagRecords.map((tag) => ({ id: tag.id })),
-        },
-      };
-
-      if (isFork && forkedFromId) {
-        data.forkedFrom = { connect: { id: forkedFromId } };
-      }
-
-      const template = await prisma.codeTemplate.create({ data });
-
-      return res.status(201).json({
-        id: template.id,
-        message: 'Code template created successfully.',
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to create template' });
+    if (isFork && forkedFromId) {
+      data.forkedFrom = { connect: { id: forkedFromId } };
     }
-  });
+
+    const template = await prisma.codeTemplate.create({ data });
+
+    res.status(201).json({
+      id: template.id,
+      message: 'Code template created successfully.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create template' });
+  }
 }

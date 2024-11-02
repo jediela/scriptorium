@@ -6,121 +6,132 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     // Get a code template
-    return getTemplate(req, res, id);
-  } else if (req.method === 'PUT') {
+    await getTemplate(req, res, id);
+  } else if (req.method === 'POST') {
     // Update a code template
-    return updateTemplate(req, res, id);
+    await updateTemplate(req, res, id);
   } else if (req.method === 'DELETE') {
     // Delete a code template
-    return deleteTemplate(req, res, id);
+    await deleteTemplate(req, res, id);
   } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
 
-// GET template
+// get template (GET)
 async function getTemplate(req, res, id) {
   try {
     const template = await prisma.codeTemplate.findUnique({
       where: { id: parseInt(id) },
       include: {
-        user: {
-          select: { id: true, firstName: true, lastName: true, avatar: true, isAdmin: false},
-        },
+        user: { select: { id: true, firstName: true, lastName: true, avatar: true } },
         tags: true,
-        forkedFrom: {
-          select: { id: true, title: true },
-        },
-        forks: {
-          select: { id: true, title: true },
-        },
+        forkedFrom: { select: { id: true, title: true } },
+        forks: { select: { id: true, title: true } },
       },
     });
 
     if (!template) {
-      return res.status(404).json({ error: 'Template not found' });
+      res.status(404).json({ error: 'Template not found' });
+      return;
     }
 
-    return res.status(200).json(template);
+    res.status(200).json(template);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Failed to fetch template' });
+    res.status(500).json({ error: 'Failed to fetch template' });
   }
 }
 
-// PUT template
+// update template (POST)
 async function updateTemplate(req, res, id) {
-  return authenticate(req, res, async () => {
-    const { title, explanation, code, tags } = req.body;
+  const user = await authenticate(req, res);
+  if (!user) {
+    return;
+  }
 
-    try {
-      const template = await prisma.codeTemplate.findUnique({ where: { id: parseInt(id) } });
+  const { title, explanation, code, tags } = req.body;
 
-      if (!template) {
-        return res.status(404).json({ error: 'Template not found' });
-      }
+  if (!title || !code) {
+    res.status(400).json({ error: 'Title and code are required' });
+    return;
+  }
 
-      if (template.userId !== req.user.id) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
+  try {
+    const template = await prisma.codeTemplate.findUnique({ where: { id: parseInt(id) } });
 
-      let tagRecords = [];
-      if (tags && tags.length > 0) {
-        tagRecords = await Promise.all(
-          tags.map(async (tagName) => {
-            tagName = tagName.trim().toLowerCase();
-            let tag = await prisma.tag.findUnique({ where: { name: tagName } });
-            if (!tag) {
-              tag = await prisma.tag.create({ data: { name: tagName } });
-            }
-            return tag;
-          })
-        );
-      }
-
-      await prisma.codeTemplate.update({
-        where: { id: parseInt(id) },
-        data: {
-          title,
-          explanation,
-          code,
-          tags: {
-            set: [],
-            connect: tagRecords.map((tag) => ({ id: tag.id })),
-          },
-          updatedAt: new Date(),
-        },
-      });
-
-      return res.status(200).json({ message: 'Code template updated successfully.' });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to update template' });
+    if (!template) {
+      res.status(404).json({ error: 'Template not found' });
+      return;
     }
-  });
+
+    if (template.userId !== user.id) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    // tag handler
+    let tagRecords = [];
+    if (tags && tags.length > 0) {
+      tagRecords = await Promise.all(
+        tags.map(async (tagName) => {
+          tagName = tagName.trim().toLowerCase();
+          let tag = await prisma.tag.findUnique({ where: { name: tagName } });
+          if (!tag) {
+            tag = await prisma.tag.create({ data: { name: tagName } });
+          }
+          return tag;
+        })
+      );
+    }
+
+    await prisma.codeTemplate.update({
+      where: { id: parseInt(id) },
+      data: {
+        title,
+        explanation,
+        code,
+        tags: {
+          set: [],
+          connect: tagRecords.map((tag) => ({ id: tag.id })),
+        },
+        updatedAt: new Date(),
+      },
+    });
+
+    res.status(200).json({ message: 'Code template updated successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update template' });
+  }
 }
 
-// DELETE template
+// delete template (DELETE)
 async function deleteTemplate(req, res, id) {
-  return authenticate(req, res, async () => {
-    try {
-      const template = await prisma.codeTemplate.findUnique({ where: { id: parseInt(id) } });
+  const user = await authenticate(req, res);
+  if (!user) {
+    return;
+  }
 
-      if (!template) {
-        return res.status(404).json({ error: 'Template not found' });
-      }
+  try {
+    const template = await prisma.codeTemplate.findUnique({ where: { id: parseInt(id) } });
 
-      if (template.userId !== req.user.id) {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-
-      await prisma.codeTemplate.delete({ where: { id: parseInt(id) } });
-
-      return res.status(200).json({ message: 'Code template deleted successfully.' });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to delete template' });
+    if (!template) {
+      res.status(404).json({ error: 'Template not found' });
+      return;
     }
-  });
+
+    if (template.userId !== user.id) {
+      res.status(403).json({ error: 'Forbidden' });
+      return;
+    }
+
+    await prisma.codeTemplate.delete({ where: { id: parseInt(id) } });
+
+    res.status(200).json({ message: 'Code template deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete template' });
+  }
 }
