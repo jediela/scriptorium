@@ -64,7 +64,6 @@ model Blog {
   id         Int      @id @default(autoincrement())
   title      String
   content    String
-  reportsNum Int      @default(0)
   isHidden   Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
