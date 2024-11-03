@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
         let { title, content, isHidden: requestedIsHidden } = req.body;
 
-        // Check if user is an admin
+        // Check if user is an admin (For hiding/unhiding blogs)
         let isHidden, message;
         if (user.isAdmin) {
             isHidden = requestedIsHidden;
@@ -96,5 +96,8 @@ export default async function handler(req, res) {
         } catch (error) {
             res.status(500).json({ error: "Error deleting blog." });
         }
+    }
+    else{
+        return res.status(405).json({ error: "Method not allowed" });
     }
 }
