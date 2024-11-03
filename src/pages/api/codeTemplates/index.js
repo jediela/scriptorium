@@ -24,9 +24,9 @@ async function getTemplates(req, res) {
 
   if (search) {
     where.OR = [
-      { title: { contains: search, mode: 'insensitive' } },
-      { explanation: { contains: search, mode: 'insensitive' } },
-      { code: { contains: search, mode: 'insensitive' } },
+      { title: { contains: search } },
+      { explanation: { contains: search } },
+      { code: { contains: search } },
     ];
   }
 
