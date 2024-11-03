@@ -1,13 +1,16 @@
 import { exec } from 'child_process';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
 const TIMEOUT = 5000;
 
+function generateId() {
+    return `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+}
+
 export async function executeCode(language, code, input = '') {
   // create unique id for the temporary files
-  const id = uuidv4();
+  const id = generateId();
   const fileDir = path.join('/tmp', id);
 
   try {
