@@ -14,13 +14,16 @@ export default async function handler(req, res) {
             });        
         }
 
+        let type;
         if (blogId){
+            type = "Comment"
             const blog = await getBlog(blogId);
             if (!blog){
                 return res.status(404).json({ error: "Blog not found." });
             }
         }
         else if (commentId){
+            type = "Reply";
             const comment = await getComment(commentId);
             if (!comment){
                 return res.status(404).json({ error: "Comment not found." });
@@ -40,7 +43,10 @@ export default async function handler(req, res) {
                     content: true,
                 }
             });
-            res.status(200).json(comment);
+            res.status(200).json({
+                type: type,
+                comment: comment
+            });
         } catch (error) {
             return res.status(500).json({ error: "Error creating comment." });
         }

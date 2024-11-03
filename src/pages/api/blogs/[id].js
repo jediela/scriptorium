@@ -84,7 +84,7 @@ export default async function handler(req, res) {
             });
             // Delete votes related to given blogId
             await prisma.vote.deleteMany({
-                where: { blogPostId: id },
+                where: { blogId: id },
             });
             // Delete blog
             await prisma.blog.delete({
