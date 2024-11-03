@@ -37,6 +37,35 @@ export async function getComment(commentId) {
     }
 }
 
+// True if user has voted, false they haven't voted
+export async function checkVotedComment(userId, commentId) {
+    try {
+        const existingVote = await prisma.vote.findFirst({
+            where: {
+                userId: userId,
+                commentId: commentId,
+            },
+        });
+        return existingVote;
+    } catch (error) {
+        throw new Error("Error retrieving vote info.");
+    }
+}
+// True if user has reported the comment, false they haven't reported it
+export async function checkReportedComment(userId, commentId) {
+    try {
+        const existingReport = await prisma.report.findFirst({
+            where: {
+                userId: userId,
+                commentId: commentId,
+            },
+        });
+        return existingReport;
+    } catch (error) {
+        throw new Error("Error retrieving vote info.");
+    }
+}
+
 export async function getVote(voteId) {
     try {
         const vote = await prisma.vote.findUnique({
@@ -60,5 +89,19 @@ export async function checkVotedBlog(userId, blogId) {
         return existingVote;
     } catch (error) {
         throw new Error("Error retrieving vote info.");
+    }
+}
+// True if user has reported the blog, false they haven't reported it
+export async function checkReportedBlog(userId, blogId) {
+    try {
+        const existingReport = await prisma.report.findFirst({
+            where: {
+                userId: userId,
+                blogPostId: blogId,
+            },
+        });
+        return existingReport;
+    } catch (error) {
+        throw new Error("Error retrieving report info.");
     }
 }
