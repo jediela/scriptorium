@@ -44,6 +44,9 @@ export default async function handler(req, res) {
             message = "Blog Hidden."
         } 
         else {
+            if (blog.isHidden) {
+                return res.status(403).json({ message: "This blog is hidden and cannot be edited." });
+            }
             isHidden = blog.isHidden;
             message = "Only admins can hide blogs."
         }
@@ -73,6 +76,9 @@ export default async function handler(req, res) {
 
     // Delete Blog
     else if (req.method === "DELETE"){
+        if (blog.isHidden && !user.isAdmin) {
+            return res.status(403).json({ message: "Cannot delete a hidden blog unless you are an admin." });
+        }
         try {
             // Delete comments related to given blogId
             await prisma.comment.deleteMany({
