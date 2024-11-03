@@ -25,7 +25,41 @@ export default async function handler(req, res) {
 
     // Edit comment
     if (req.method === "POST"){
+        let { content, isHidden: requestedIsHidden } = req.body;
 
+        // Check if user is an admin (For hiding/unhiding comments)
+        let isHidden, message;
+        if (user.isAdmin) {
+            isHidden = requestedIsHidden;
+            message = "Comment Hidden."
+        } 
+        else {
+            if (blog.isHidden) {
+                return res.status(403).json({ message: "This blog is hidden and cannot be edited." });
+            }
+            isHidden = blog.isHidden;
+            message = "Only admins can hide blogs."
+        }
+
+        try {
+            const updatedComment = await prisma.comment.update({
+                where: { id },
+                data: {
+                    content: content || blog.content,
+                    isHidden: isHidden,
+                },
+                select: {
+                    content: true,
+                    isHidden: true,
+                },
+            });
+            res.status(200).json({
+                message: message,
+                updatedComment: updatedComment,
+            });
+        } catch (error) {
+            res.status(500).json({ error: "Error updating comment." });
+        }
     }
 
     // Delete comment
