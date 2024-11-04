@@ -1038,10 +1038,31 @@
 			"name": "Code Execution",
 			"item": [
 				{
-					"name": "Execute js",
+					"name": "Execute",
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"language\": \"cpp\",\n  \"code\": \"#include <iostream>\\nint main() { std::cout << Hello, World! << std::endl; return 0; }\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/codeExecutions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"codeExecutions"
+							]
+						}
 					},
 					"response": []
 				}
