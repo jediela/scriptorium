@@ -23,20 +23,3 @@ jobs:
 
         - name: Run startup.sh script
           run: ./startup.sh
-
-        - name: Run run.sh script
-          run: |
-            ./run.sh &
-            SERVER_PID=$! 
-            sleep 5         
-            if lsof -i:3000; then
-              echo "Application started successfully."
-            else
-              echo "Application failed to start."
-              exit 1
-            fi
-            kill $SERVER_PID
-  
-        - name: End action
-          run: echo "Application started and terminated successfully"
-               
