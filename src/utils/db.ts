@@ -4,10 +4,10 @@ const prisma = new PrismaClient();
 
 export default prisma;
 
-export async function getUser(userId) {
+export async function getUser(userId: number) {
     try {
         const user = await prisma.user.findUnique({
-            where: { id: Number(userId) }
+            where: { id: userId }
         });
         return user;
     } catch (error) {
@@ -15,10 +15,10 @@ export async function getUser(userId) {
     }
 }
 
-export async function getBlog(blogId) {
+export async function getBlog(blogId: number) {
     try {
         const blog = await prisma.blog.findUnique({
-            where: { id: Number(blogId) }
+            where: { id: blogId }
         });
         return blog;
     } catch (error) {
@@ -26,10 +26,10 @@ export async function getBlog(blogId) {
     }
 }
 
-export async function getComment(commentId) {
+export async function getComment(commentId: number) {
     try {
         const comment = await prisma.comment.findUnique({
-            where: { id: Number(commentId) }
+            where: { id: commentId }
         });
         return comment;
     } catch (error) {
@@ -38,7 +38,7 @@ export async function getComment(commentId) {
 }
 
 // True if user has voted, false they haven't voted
-export async function checkVotedComment(userId, commentId) {
+export async function checkVotedComment(userId: number, commentId: number) {
     try {
         const existingVote = await prisma.vote.findFirst({
             where: {
@@ -52,7 +52,7 @@ export async function checkVotedComment(userId, commentId) {
     }
 }
 // True if user has reported the comment, false they haven't reported it
-export async function checkReportedComment(userId, commentId) {
+export async function checkReportedComment(userId: number, commentId: number) {
     try {
         const existingReport = await prisma.report.findFirst({
             where: {
@@ -66,10 +66,10 @@ export async function checkReportedComment(userId, commentId) {
     }
 }
 
-export async function getVote(voteId) {
+export async function getVote(voteId: number) {
     try {
         const vote = await prisma.vote.findUnique({
-            where: { id: Number(voteId) }
+            where: { id: voteId }
         });
         return vote;
     } catch (error) {
@@ -78,7 +78,7 @@ export async function getVote(voteId) {
 }
 
 // True if user has voted, false they haven't voted
-export async function checkVotedBlog(userId, blogId) {
+export async function checkVotedBlog(userId: number, blogId: number) {
     try {
         const existingVote = await prisma.vote.findFirst({
             where: {
@@ -92,7 +92,7 @@ export async function checkVotedBlog(userId, blogId) {
     }
 }
 // True if user has reported the blog, false they haven't reported it
-export async function checkReportedBlog(userId, blogId) {
+export async function checkReportedBlog(userId: number, blogId: number) {
     try {
         const existingReport = await prisma.report.findFirst({
             where: {

@@ -1,5 +1,6 @@
 import { authenticate } from "@/utils/auth";
 import prisma from "@/utils/db";
+import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req, res) {
     const user = await authenticate(req, res);
@@ -27,7 +28,6 @@ export default async function handler(req, res) {
             take: parseInt(pageSize, 10),
             include: { reports: true }
         });
-        res.status(200).json({ reportedBlogs, reportedComments });
         return res.status(200).json({ reportedBlogs, reportedComments });
     } catch (error) {
         return res.status(500).json({ error: "Error fetching reported content." });
