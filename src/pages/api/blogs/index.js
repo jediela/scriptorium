@@ -26,13 +26,13 @@ export default async function handler(req, res) {
                     },
                 },
             });
-            res.status(200).json({
+            return res.status(200).json({
                 message: "Blog created successfully",
                 author: user.firstName + " " + user.lastName,
                 blog: newBlog,
             });
         } catch (error) {
-            res.status(500).json({ error: "Error creating blog." });
+            return res.status(500).json({ error: "Error creating blog." });
         }
     }
 
