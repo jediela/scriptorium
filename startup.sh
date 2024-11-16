@@ -3,6 +3,9 @@
 echo "Installing dependencies..."
 npm install
 
+echo "Creating python docker container"
+docker build -t python-executor -f docker/python/Dockerfile ./docker/python
+
 echo "Running database migrations..."
 npx prisma migrate dev
 
