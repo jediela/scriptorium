@@ -1,6 +1,4 @@
 import Layout from "@/components/Layout";
-import ToggleTheme from "@/components/ToggleTheme";
-
 export default function Index(){
 
   function handleToken(){
@@ -41,7 +39,6 @@ export default function Index(){
           </p>
         </div>
 
-        <ToggleTheme/>
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           onClick={handleToken}
