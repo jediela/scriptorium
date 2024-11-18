@@ -1,16 +1,14 @@
 import Layout from "@/components/Layout";
+export default function Index(){
 
-export default function Login(){3
-
-  function handleLogToken(){
+  function handleToken(){
     const token = localStorage.getItem('token');
-    console.log(token ? `Token: ${token}` : 'No token found');
+    console.log(token);
   };
 
   function logout(){
     const token = localStorage.getItem('token');
-    localStorage.setItem('token', "");
-    console.log(token ? `Token: ${token}` : 'No token found');
+    localStorage.removeItem('token');
     window.location.reload();
   };
 
@@ -41,10 +39,9 @@ export default function Login(){3
           </p>
         </div>
 
-
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={handleLogToken}
+          onClick={handleToken}
         >
           Log Token
         </button>
