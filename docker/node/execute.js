@@ -1,4 +1,4 @@
-const fs = require('fs');
+const { Readable } = require('stream');
 
 let codeWithInput = '';
 
@@ -7,11 +7,16 @@ process.stdin.on('data', function(chunk) {
 });
 
 process.stdin.on('end', function() {
-  let [code, inputData] = codeWithInput.split('---INPUT---');
+  let [code, inputData] = codeWithInput.split('---END-CODE---');
   inputData = inputData || '';
-  const stdin = require('stream').Readable.from([inputData]);
+
+  const inputStream = new Readable();
+  inputStream.push(inputData);
+  inputStream.push(null);
+
   const originalStdin = process.stdin;
-  process.stdin = stdin;
+
+  process.stdin = inputStream;
 
   try {
     eval(code);

@@ -29,14 +29,13 @@ export async function executeCode(language: string, code: string, input = ''): P
     let codeWithInput = code;
     if (input) {
       codeWithInput += '\n---END-CODE---\n' + input;
-    } else {
-      codeWithInput += '\n---END-CODE---\n';
     }
 
     dockerProcess.stdin.write(codeWithInput);
     dockerProcess.stdin.end();
   });
 }
+
 
 
 
@@ -55,6 +54,18 @@ function getDockerImage(language: string): string {
       return 'cpp-executor';
     case 'csharp':
       return 'csharp-executor';
+    case 'go':
+      return 'go-executor';
+    case 'ruby':
+      return 'ruby-executor';
+    case 'php':
+      return 'php-executor';
+    case 'swift':
+      return 'swift-executor';
+    case 'kotlin':
+      return 'kotlin-executor';
+    case 'rust':
+      return 'rust-executor';
     default:
       throw new Error('Unsupported language');
   }

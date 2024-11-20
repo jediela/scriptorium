@@ -9,6 +9,12 @@ docker build -t java-executor ./docker/java
 docker build -t c-executor ./docker/c
 docker build -t cpp-executor ./docker/cpp
 docker build -t csharp-executor ./docker/csharp
+docker build -t go-executor ./docker/go
+docker build -t ruby-executor ./docker/ruby
+docker build -t php-executor ./docker/php
+docker build -t swift-executor ./docker/swift
+docker build -t kotlin-executor ./docker/kotlin
+docker build -t rust-executor ./docker/rust
 
 echo "Running database migrations..."
 npx prisma migrate dev
