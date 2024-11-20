@@ -5,6 +5,4 @@ RUN useradd -m coder
 USER coder
 WORKDIR /home/coder
 
-COPY Program.cs /home/coder/Program.cs
-
-CMD ["sh", "-c", "dotnet new console -n app && mv Program.cs app/Program.cs && cd app && dotnet run"]
+CMD ["sh", "-c", "awk '/---END-CODE---/{exit} {print}' > Program.cs && dotnet new console -o app && mv Program.cs app/Program.cs && cd app && dotnet run"]
