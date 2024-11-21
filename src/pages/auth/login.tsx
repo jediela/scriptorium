@@ -6,7 +6,7 @@ import { Slide, toast, ToastContainer } from 'react-toastify';
 import {Input} from "@nextui-org/input";
 import {EyeFilledIcon} from "public/tools/EyeFilledIcon";
 import {EyeSlashFilledIcon} from "public/tools/EyeSlashFilledIcon";
-import { Button } from '@nextui-org/react';
+import { Button, Link } from '@nextui-org/react';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 
@@ -31,8 +31,6 @@ export default function Login() {
   // Handle form submission
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
-
     try {
       const response = await fetch('/api/users/login', {
         method: 'POST',
@@ -47,21 +45,17 @@ export default function Login() {
         toast.error(errorData.message || 'Invalid credentials');
         return;
       }
-
+      
+      // Store token and user data in localStorage
       const data = await response.json();
       const token = data.token;
-      const user = data.user;
-  
-      // Store token and user data in localStorage
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      
       toast.success('Login successful! Redirecting...',); 
 
       // Delay redirect to show message
       setTimeout(() => {
         router.push('/');
-      }, 2000);
+      }, 1500);
     } catch (err) {
       toast.error('An error occurred, please try again.');
     }
@@ -80,7 +74,7 @@ export default function Login() {
 
         <Input
           value={email}
-          type="email"
+          type="text"
           label="Email"
           variant="bordered"
           onChange={(e) => setEmail(e.target.value)}
@@ -109,6 +103,7 @@ export default function Login() {
         <Button color="primary" size='lg' type='submit'>
           Login
         </Button>
+        <p>Don&apos;t have an account? <Link underline="always" href="/auth/signup">Sign up here</Link> </p>        
       </form>
     </PlainLayout>
   );

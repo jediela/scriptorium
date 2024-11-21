@@ -25,7 +25,6 @@ export default async function handler(req, res) {
         if (!user) {
             return res.status(401).json({ error: "Invalid refresh token." });
         }
-        console.log(user)
         const newAccessToken = generateToken(user);
         const newRefreshToken = generateRefreshToken(user);
 

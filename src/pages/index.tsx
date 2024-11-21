@@ -9,6 +9,7 @@ export default function Index(){
   function logout(){
     const token = localStorage.getItem('token');
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     window.location.reload();
   };
 
@@ -20,12 +21,15 @@ export default function Index(){
         },
         body: JSON.stringify({
           email: "test@email.com",
-          password: "password"
+          password: "123"
         }),
       });
       const data = await response.json();
       const token = data.token;
+      const user = data.user;
+
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
       window.location.reload();
   };
 

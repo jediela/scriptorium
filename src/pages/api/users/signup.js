@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   const { email, password, firstName, lastName, avatar, phoneNumber, isAdmin } = req.body;
 
   // Field check
-  if (!email || !password || !firstName || !lastName){
+  if (!email || !password || !firstName){
     return res.status(400).json({
       message: "Please provide all the required fields",
     });
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       where: { email }
     });
   } catch (error) {
-    return res.status(500).json({ error: "Error finding user." });
+    return res.status(500).json({ error: "Error creating user." });
   }
 
   if (emailExists){
