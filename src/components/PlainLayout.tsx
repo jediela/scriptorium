@@ -1,6 +1,5 @@
 import PlainNavbar from "./PlainNavbar";
 import Footer from "./Footer";
-
 import { ReactNode } from "react";
 import { useTheme } from "next-themes";
 
