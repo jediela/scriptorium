@@ -103,7 +103,7 @@ export default function Login() {
         <Button color="primary" size='lg' type='submit'>
           Login
         </Button>
-        <p>Don't have an account? <Link underline="always" href="/auth/signup">Sign up here</Link> </p>        
+        <p>Don&apos;t have an account? <Link underline="always" href="/auth/signup">Sign up here</Link> </p>        
       </form>
     </PlainLayout>
   );
