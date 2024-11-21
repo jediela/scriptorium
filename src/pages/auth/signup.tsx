@@ -1,6 +1,6 @@
 import Avatars from "@/components/Avatars";
 import PlainLayout from "@/components/PlainLayout";
-import { Avatar, Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import { Avatar, Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import router from "next/router";
 import React from "react";
@@ -155,7 +155,7 @@ export default function Signup(){
                                 Exit
                                 </Button>
                                 <Button color="primary" onPress={onClose}>
-                                Update
+                                Select
                                 </Button>
                             </ModalFooter>
                         </ModalBody>
@@ -236,7 +236,8 @@ export default function Signup(){
 
                 <Button color="primary" size='lg' type='submit'>
                     Create Profile
-                </Button>            
+                </Button>     
+                <p>Already have an account? <Link underline="always" href="/auth/login">Login here</Link> </p>       
             </form>
         </PlainLayout>
     );

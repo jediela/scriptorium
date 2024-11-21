@@ -6,7 +6,7 @@ import { Slide, toast, ToastContainer } from 'react-toastify';
 import {Input} from "@nextui-org/input";
 import {EyeFilledIcon} from "public/tools/EyeFilledIcon";
 import {EyeSlashFilledIcon} from "public/tools/EyeSlashFilledIcon";
-import { Button } from '@nextui-org/react';
+import { Button, Link } from '@nextui-org/react';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 
@@ -26,7 +26,7 @@ export default function Login() {
     if (token) {
       router.push('/');
     }
-  }, []);
+  }, [router]);
   
   // Handle form submission
   async function handleSubmit(e: React.FormEvent) {
@@ -103,6 +103,7 @@ export default function Login() {
         <Button color="primary" size='lg' type='submit'>
           Login
         </Button>
+        <p>Don't have an account? <Link underline="always" href="/auth/signup">Sign up here</Link> </p>        
       </form>
     </PlainLayout>
   );

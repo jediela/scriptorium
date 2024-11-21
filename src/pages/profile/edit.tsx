@@ -43,10 +43,12 @@ export default function Edit() {
                 } else {
                     toast.error("Failed to fetch user data");
                     router.push("/");
+                    return;
                 }
             } catch (error) {
                 console.error("Error:", error);
                 router.push("/");
+                return;
             }
         }
         fetchUserData();
@@ -75,7 +77,7 @@ export default function Edit() {
     }     
 
     const fnameValid = React.useMemo(() => validateFname(fname), [fname]);
-    const emailValid = React.useMemo(() => validateEmail(email), [email]);
+    let emailValid = React.useMemo(() => validateEmail(email), [email]);
 
     async function handleSubmit(e: React.FormEvent){
         e.preventDefault();
@@ -101,17 +103,17 @@ export default function Edit() {
             });
             
             if (response.ok) {
-                const updatedData = await response.json();
-                const user = updatedData.updatedUser;
-                setUserData(user);
-                localStorage.setItem('user', JSON.stringify(user));
-            
                 toast.success('Profile Updated!'); 
-
                 setTimeout(() => {
                     router.push('/');
                 }, 2000);            
             } 
+            else if(response.status == 409){
+                const error = "Email already in use";
+                toast.error(error);
+                setEmailError(error);
+                emailValid = false;
+            }
             else {
                 toast.error('Failed to update profile');
             }
@@ -199,8 +201,8 @@ export default function Edit() {
                     variant="bordered"
                     className="max-w-xs"
                     size='lg'
-                    isInvalid={!emailValid}
-                    color={emailValid ? "default" : "danger"}
+                    isInvalid={!emailValid || emailError !== ""}
+                    color={emailValid && emailError === "" ? "default" : "danger"}
                     errorMessage={emailError}
                     onValueChange={setEmail}
                     onChange={(e) => setEmail(e.target.value)}
