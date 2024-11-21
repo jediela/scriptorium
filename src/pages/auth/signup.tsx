@@ -26,7 +26,7 @@ export default function Signup(){
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) router.push('/');    
-    }, [router]);
+    }, []);
 
     function validateFname(fname: string) {
         if(fname === ""){

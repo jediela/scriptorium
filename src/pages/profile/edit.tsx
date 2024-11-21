@@ -50,7 +50,7 @@ export default function Edit() {
             }
         }
         fetchUserData();
-    }, [router]);
+    }, []);
 
     function validateFname(fname: string) {
         if(fname === ""){

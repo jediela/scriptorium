@@ -26,7 +26,7 @@ export default function Login() {
     if (token) {
       router.push('/');
     }
-  }, [router]);
+  }, []);
   
   // Handle form submission
   async function handleSubmit(e: React.FormEvent) {
