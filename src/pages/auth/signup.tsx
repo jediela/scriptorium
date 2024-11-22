@@ -5,11 +5,9 @@ import { useTheme } from "next-themes";
 import router from "next/router";
 import React from "react";
 import { useState, useEffect } from "react";
-import { Slide, toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
 
 export default function Signup(){
-
     const { theme } = useTheme();
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [fname, setFname] = useState('');
@@ -119,7 +117,6 @@ export default function Signup(){
 
     return(
         <PlainLayout>
-            <ToastContainer position='top-center' autoClose={2000} transition={Slide} limit={1} pauseOnFocusLoss={false}/>
             <form
                 onSubmit={handleSubmit}
                 className={`w-full max-w-md p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'} border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}
