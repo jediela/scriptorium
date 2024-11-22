@@ -78,9 +78,9 @@ function getDockerRunCommand(language: string): string[] {
     '--rm',
     '-i',
     '--network=none',
-    '--cpus=1',
-    '--memory=512m',
-    '--pids-limit', '64',
+    '--cpus=0.5',
+    '--memory=256m',
+    '--pids-limit', '32',
     image,
   ];
 }
