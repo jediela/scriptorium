@@ -1,8 +1,11 @@
 FROM golang:1.17
 
 RUN useradd -m coder
-
-USER coder
 WORKDIR /home/coder
 
-CMD ["sh", "-c", "awk '/---END-CODE---/{exit} {print}' > main.go && awk 'f{print}' ORS='' /---END-CODE---/{f=1} | go run main.go"]
+COPY execute.sh /home/coder/execute.sh
+RUN chmod +x /home/coder/execute.sh && chown coder:coder /home/coder/execute.sh
+
+USER coder
+
+CMD ["./execute.sh"]

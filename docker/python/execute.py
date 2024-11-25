@@ -1,15 +1,22 @@
 import sys
 import io
 
-code_with_input = sys.stdin.read()
+code_and_input = sys.stdin.read()
 
-if '---END-CODE---' in code_with_input:
-    code, input_data = code_with_input.split('---END-CODE---', 1)
-    sys.stdin = io.StringIO(input_data)
-else:
-    code = code_with_input
+delimiter = '---SPLIT---\n'
+code, _, input_data = code_and_input.partition(delimiter)
+
+sys.stdin = io.StringIO(input_data)
+
+from contextlib import redirect_stdout, redirect_stderr
+output = io.StringIO()
+error = io.StringIO()
 
 try:
-    exec(code)
+    with redirect_stdout(output), redirect_stderr(error):
+        exec(code, {})
+    print(output.getvalue())
 except Exception as e:
-    print(e, file=sys.stderr)
+    print(error.getvalue(), file=sys.stderr)
+    print(f"{e.__class__.__name__}: {e}", file=sys.stderr)
+    sys.exit(1)

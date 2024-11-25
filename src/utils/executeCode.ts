@@ -2,7 +2,16 @@ import { spawn } from 'child_process';
 
 export async function executeCode(language: string, code: string, input = ''): Promise<string> {
   const dockerImage = getDockerImage(language);
-  const commands = getDockerRunCommand(language);
+  const commands = [
+    'run',
+    '--rm',
+    '-i',
+    '--network=none',
+    '--cpus=0.5',
+    '--memory=256m',
+    '--pids-limit=128',
+    dockerImage,
+  ];
 
   return new Promise((resolve, reject) => {
     const dockerProcess = spawn('docker', commands, { timeout: 5000 });
@@ -20,25 +29,23 @@ export async function executeCode(language: string, code: string, input = ''): P
 
     dockerProcess.on('close', (exitCode) => {
       if (exitCode === 0) {
-        resolve(output);
+        if (output.trim()) {
+          resolve(output.trim());
+        } else {
+          resolve('No output produced.');
+        }
       } else {
-        reject(new Error(error || 'Execution error'));
+        reject(new Error(error.trim() || 'Execution error'));
       }
     });
 
-    let codeWithInput = code;
-    if (input) {
-      codeWithInput += '\n---END-CODE---\n' + input;
-    }
+    const delimiter = '---SPLIT---\n';
+    const codeWithInput = `${code}\n${delimiter}${input}`;
 
     dockerProcess.stdin.write(codeWithInput);
     dockerProcess.stdin.end();
   });
 }
-
-
-
-
 
 function getDockerImage(language: string): string {
   switch (language) {
@@ -69,18 +76,4 @@ function getDockerImage(language: string): string {
     default:
       throw new Error('Unsupported language');
   }
-}
-
-function getDockerRunCommand(language: string): string[] {
-  const image = getDockerImage(language);
-  return [
-    'run',
-    '--rm',
-    '-i',
-    '--network=none',
-    '--cpus=0.5',
-    '--memory=256m',
-    '--pids-limit', '32',
-    image,
-  ];
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PlainLayout from '@/components/PlainLayout';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
@@ -28,43 +28,48 @@ export default function CodeExecution() {
   ];
 
   const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
+  const [language, setLanguage] = useState('javascript');
 
   const handleLanguageChange = (keys: any) => {
     setSelectedLanguage(keys);
+    setLanguage(Array.from(keys).join(''));
   };
 
-  const handleRunCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsRunning(true);
-    setOutput('Running...');
-    const language = Array.from(selectedLanguage).join('');
-    try {
-      const response = await fetch('/api/codeExecutions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ language, code, input }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        setOutput(data.output);
-        toast.success('Code executed successfully!', { theme });
-      } else {
-        setOutput(data.error || 'Error executing code');
-        toast.error(data.error || 'Error executing code', { theme });
-      }
-    } catch (error) {
-      setOutput('Error connecting to server');
-      console.error(error);
-      toast.error('Error connecting to server', { theme });
+  const selectedValue = React.useMemo(() => {
+    return Array.from(selectedLanguage).join(', ').replaceAll('_', ' ');
+  }, [selectedLanguage]);
+
+const handleRunCode = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsRunning(true);
+  setOutput('Running...');
+  const language = Array.from(selectedLanguage).join('');
+  try {
+    const response = await fetch('/api/codeExecutions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({ language, code, input }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setOutput(data.output || 'No output produced.');
+      toast.success('Code executed successfully!', { theme });
+    } else {
+      setOutput(data.error || 'Error executing code');
+      toast.error(data.error || 'Error executing code', { theme });
     }
-    setIsRunning(false);
-  };
-  
+  } catch (error) {
+    setOutput('Error connecting to server');
+    console.error(error);
+    toast.error('Error connecting to server', { theme });
+  }
+  setIsRunning(false);
+};
 
   return (
     <PlainLayout>
@@ -89,26 +94,36 @@ export default function CodeExecution() {
         >
           Online Code Executor
         </h2>
-
-        <div className="w-full max-w-xs">
-          <Dropdown>
-            <DropdownTrigger>
-              {selectedLanguage
-                ? languageOptions.find((lang) => lang.key === Array.from(selectedLanguage).join(''))?.name
-                : 'Select Language'}
-            </DropdownTrigger>
-            <DropdownMenu
-              aria-label="Select Language"
-              selectionMode="single"
-              selectedKeys={selectedLanguage}
-              onSelectionChange={handleLanguageChange}
-            >
-              {languageOptions.map((lang) => (
-                <DropdownItem key={lang.key}>{lang.name}</DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
-        </div>
+            <Dropdown backdrop="blur">
+                <DropdownTrigger>
+                    <Button 
+                        variant="shadow"
+                    >
+                        {selectedValue || 'Select Language'}
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                aria-label="Select Language"
+                selectionMode="single"
+                selectedKeys={selectedLanguage}
+                onSelectionChange={handleLanguageChange}
+                css={{ minWidth: '200px' }}
+                itemClasses={{
+                    base: [
+                      "rounded-md",
+                      "text-default-500",
+                      "transition-opacity",
+                      "data-[selectable=true]:focus:bg-default-50",
+                      "data-[pressed=true]:opacity-70",
+                      "data-[focus-visible=true]:ring-default-500",
+                    ],
+                  }}
+                >
+                {languageOptions.map((lang) => (
+                    <DropdownItem key={lang.key}>{lang.name}</DropdownItem>
+                ))}
+                </DropdownMenu>
+            </Dropdown>
 
         <Textarea
           label="Code"
@@ -133,7 +148,7 @@ export default function CodeExecution() {
           size="lg"
         />
 
-        <Button color="primary" size="lg" type="submit" isDisabled={isRunning}>
+        <Button variant="shadow" size="lg" type="submit" isDisabled={isRunning}>
           {isRunning ? 'Running...' : 'Run Code'}
         </Button>
 

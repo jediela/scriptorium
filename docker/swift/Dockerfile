@@ -1,8 +1,11 @@
-FROM swift:5.5
+FROM swift:5.8
 
 RUN useradd -m coder
-
-USER coder
 WORKDIR /home/coder
 
-CMD ["sh", "-c", "awk '/---END-CODE---/{exit} {print}' > main.swift && awk 'f{print}' ORS='' /---END-CODE---/{f=1} | swift main.swift"]
+COPY execute.sh /home/coder/execute.sh
+RUN chmod +x /home/coder/execute.sh && chown coder:coder /home/coder/execute.sh
+
+USER coder
+
+CMD ["./execute.sh"]
