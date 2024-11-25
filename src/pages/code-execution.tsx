@@ -107,7 +107,7 @@ const handleRunCode = async (e: React.FormEvent) => {
                 selectionMode="single"
                 selectedKeys={selectedLanguage}
                 onSelectionChange={handleLanguageChange}
-                css={{ minWidth: '200px' }}
+                // css={{ minWidth: '200px' }}
                 itemClasses={{
                     base: [
                       "rounded-md",
