@@ -1,33 +1,34 @@
-const { Readable } = require('stream');
+const fs = require('fs');
+const { spawn } = require('child_process');
 
-let codeAndInput = '';
-
-process.stdin.on('data', (chunk) => {
-  codeAndInput += chunk.toString();
+let code_and_input = '';
+process.stdin.on('data', function (chunk) {
+    code_and_input += chunk;
 });
 
-process.stdin.on('end', () => {
-  const delimiter = '---SPLIT---\n';
-  const [code, inputData = ''] = codeAndInput.split(delimiter);
+process.stdin.on('end', function () {
+    const delimiter = '---SPLIT---\n';
+    const parts = code_and_input.split(delimiter);
 
-  const inputStream = new Readable();
-  inputStream.push(inputData);
-  inputStream.push(null);
+    const code = parts[0];
+    const input_data = parts[1] || '';
 
-  const originalConsoleLog = console.log;
-  let output = '';
-  console.log = function (...args) {
-    output += args.join(' ') + '\n';
-  };
+    fs.writeFileSync('program.js', code);
 
-  try {
-    eval(code);
+    const nodeProcess = spawn('node', ['program.js']);
 
-    process.stdout.write(output);
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  } finally {
-    console.log = originalConsoleLog;
-  }
+    nodeProcess.stdin.write(input_data);
+    nodeProcess.stdin.end();
+
+    nodeProcess.stdout.on('data', (data) => {
+        process.stdout.write(data);
+    });
+
+    nodeProcess.stderr.on('data', (data) => {
+        process.stderr.write(data);
+    });
+
+    nodeProcess.on('close', (code) => {
+        process.exit(code);
+    });
 });

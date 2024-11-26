@@ -4,6 +4,7 @@ import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
+import { Editor } from '@monaco-editor/react';
 
 export default function CodeExecution() {
   const [code, setCode] = useState<string>('');
@@ -16,15 +17,14 @@ export default function CodeExecution() {
     { key: 'javascript', name: 'JavaScript' },
     { key: 'python', name: 'Python' },
     { key: 'java', name: 'Java' },
-    { key: 'c', name: 'C' },
     { key: 'cpp', name: 'C++' },
     { key: 'csharp', name: 'C#' },
-    { key: 'go', name: 'Go' },
-    { key: 'ruby', name: 'Ruby' },
     { key: 'php', name: 'PHP' },
     { key: 'swift', name: 'Swift' },
-    { key: 'kotlin', name: 'Kotlin' },
     { key: 'rust', name: 'Rust' },
+    { key: 'perl', name: 'Perl' },
+    { key: 'haskell', name: 'Haskell' },
+    { key: 'dart', name: 'Dart' },
   ];
 
   const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
@@ -32,44 +32,63 @@ export default function CodeExecution() {
 
   const handleLanguageChange = (keys: any) => {
     setSelectedLanguage(keys);
-    setLanguage(Array.from(keys).join(''));
+    const newLanguage = Array.from(keys).join('');
+    setLanguage(newLanguage);
   };
 
   const selectedValue = React.useMemo(() => {
     return Array.from(selectedLanguage).join(', ').replaceAll('_', ' ');
   }, [selectedLanguage]);
 
-const handleRunCode = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsRunning(true);
-  setOutput('Running...');
-  const language = Array.from(selectedLanguage).join('');
-  try {
-    const response = await fetch('/api/codeExecutions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify({ language, code, input }),
-    });
+  const languageMappings: { [key: string]: string } = {
+    javascript: 'javascript',
+    python: 'python',
+    java: 'java',
+    cpp: 'cpp',
+    csharp: 'csharp',
+    php: 'php',
+    swift: 'swift',
+    rust: 'rust',
+    perl: 'perl',
+    haskell: 'haskell',
+    dart: 'dart',
+  };
 
-    const data = await response.json();
+  const monacoLanguage = languageMappings[language] || 'plaintext';
 
-    if (response.ok) {
-      setOutput(data.output || 'No output produced.');
-      toast.success('Code executed successfully!', { theme });
-    } else {
-      setOutput(data.error || 'Error executing code');
-      toast.error(data.error || 'Error executing code', { theme });
+  const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
+
+  const handleRunCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsRunning(true);
+    setOutput('Running...');
+    const language = Array.from(selectedLanguage).join('');
+    try {
+      const response = await fetch('/api/codeExecutions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ language, code, input }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setOutput(data.output || 'No output produced.');
+        toast.success('Code executed successfully!', { theme });
+      } else {
+        setOutput(data.error || 'Error executing code');
+        toast.error(data.error || 'Error executing code', { theme });
+      }
+    } catch (error) {
+      setOutput('Error connecting to server');
+      console.error(error);
+      toast.error('Error connecting to server', { theme });
     }
-  } catch (error) {
-    setOutput('Error connecting to server');
-    console.error(error);
-    toast.error('Error connecting to server', { theme });
-  }
-  setIsRunning(false);
-};
+    setIsRunning(false);
+  };
 
   return (
     <PlainLayout>
@@ -94,48 +113,46 @@ const handleRunCode = async (e: React.FormEvent) => {
         >
           Online Code Executor
         </h2>
-            <Dropdown backdrop="blur">
-                <DropdownTrigger>
-                    <Button 
-                        variant="shadow"
-                    >
-                        {selectedValue || 'Select Language'}
-                    </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                aria-label="Select Language"
-                selectionMode="single"
-                selectedKeys={selectedLanguage}
-                onSelectionChange={handleLanguageChange}
-                // css={{ minWidth: '200px' }}
-                itemClasses={{
-                    base: [
-                      "rounded-md",
-                      "text-default-500",
-                      "transition-opacity",
-                      "data-[selectable=true]:focus:bg-default-50",
-                      "data-[pressed=true]:opacity-70",
-                      "data-[focus-visible=true]:ring-default-500",
-                    ],
-                  }}
-                >
-                {languageOptions.map((lang) => (
-                    <DropdownItem key={lang.key}>{lang.name}</DropdownItem>
-                ))}
-                </DropdownMenu>
-            </Dropdown>
+        <Dropdown backdrop="blur">
+          <DropdownTrigger>
+            <Button variant="shadow">{selectedValue || 'Select Language'}</Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            aria-label="Select Language"
+            selectionMode="single"
+            selectedKeys={selectedLanguage}
+            onSelectionChange={handleLanguageChange}
+            itemClasses={{
+              base: [
+                'rounded-md',
+                'text-default-500',
+                'transition-opacity',
+                'data-[selectable=true]:focus:bg-default-50',
+                'data-[pressed=true]:opacity-70',
+                'data-[focus-visible=true]:ring-default-500',
+              ],
+            }}
+          >
+            {languageOptions.map((lang) => (
+              <DropdownItem key={lang.key}>{lang.name}</DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
 
-        <Textarea
-          label="Code"
-          placeholder="Write your code here"
-          isRequired
-          fullWidth
-          minRows={10}
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className="max-w-xl"
-          size="lg"
-        />
+        <div className="editor-container w-full max-w-xl">
+          <label className="editor-label text-sm font-medium mb-1">Code</label>
+          <Editor
+            height="400px"
+            language={monacoLanguage}
+            theme={editorTheme}
+            value={code}
+            onChange={(value) => setCode(value || '')}
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+            }}
+          />
+        </div>
 
         <Textarea
           label="Input"

@@ -6,15 +6,16 @@ npm install
 docker build -t python-executor ./docker/python
 docker build -t node-executor ./docker/node
 docker build -t java-executor ./docker/java
-docker build -t c-executor ./docker/c
 docker build -t cpp-executor ./docker/cpp
 docker build -t csharp-executor ./docker/csharp
-docker build -t go-executor ./docker/go
-docker build -t ruby-executor ./docker/ruby
 docker build -t php-executor ./docker/php
 docker build -t swift-executor ./docker/swift
-docker build -t kotlin-executor ./docker/kotlin
 docker build -t rust-executor ./docker/rust
+docker build -t r-executor ./docker/r
+docker build -t perl-executor ./docker/perl
+docker build -t d-executor ./docker/d
+docker build -t haskell-executor ./docker/haskell
+docker build -t dart-executor ./docker/dart
 
 echo "Running database migrations..."
 npx prisma migrate dev

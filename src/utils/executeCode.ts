@@ -55,24 +55,22 @@ function getDockerImage(language: string): string {
       return 'node-executor';
     case 'java':
       return 'java-executor';
-    case 'c':
-      return 'c-executor';
     case 'cpp':
       return 'cpp-executor';
     case 'csharp':
       return 'csharp-executor';
-    case 'go':
-      return 'go-executor';
-    case 'ruby':
-      return 'ruby-executor';
     case 'php':
       return 'php-executor';
     case 'swift':
       return 'swift-executor';
-    case 'kotlin':
-      return 'kotlin-executor';
     case 'rust':
       return 'rust-executor';
+    case 'perl':
+      return 'perl-executor';
+    case 'haskell':
+      return 'haskell-executor';
+    case 'dart':
+      return 'dart-executor';
     default:
       throw new Error('Unsupported language');
   }

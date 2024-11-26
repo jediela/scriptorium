@@ -1,4 +1,4 @@
-FROM gcc:latest
+FROM dart:stable
 
 RUN useradd -m coder
 WORKDIR /home/coder

@@ -1,4 +1,4 @@
-FROM golang:1.17
+FROM haskell:latest
 
 RUN useradd -m coder
 WORKDIR /home/coder
