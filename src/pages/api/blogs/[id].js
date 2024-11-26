@@ -40,10 +40,13 @@ export default async function handler(req, res) {
         // Check if user is an admin (For hiding/unhiding blogs)
         let isHidden, message;
         if (user.isAdmin) {
-            isHidden = requestedIsHidden;
-            message = "Blog Hidden."
-        } 
-        else {
+            if (requestedIsHidden !== undefined && requestedIsHidden !== blog.isHidden) {
+                isHidden = requestedIsHidden;
+                message = requestedIsHidden ? "Blog Hidden." : "Blog Unhidden.";
+            } else {
+                isHidden = blog.isHidden;
+            }
+        } else {
             if (blog.isHidden) {
                 return res.status(403).json({ message: "This blog is hidden and cannot be edited." });
             }
@@ -72,6 +75,11 @@ export default async function handler(req, res) {
         } catch (error) {
             res.status(500).json({ error: "Error updating blog." });
         }
+    }
+
+    // Get blog
+    else if (req.method === "GET"){
+        return res.status(200).json(blog);
     }
 
     // Delete Blog

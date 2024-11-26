@@ -33,7 +33,6 @@ export default function Index(){
       window.location.reload();
   };
 
-
   return(
       <Layout>
         <div className="container mx-auto py-10">

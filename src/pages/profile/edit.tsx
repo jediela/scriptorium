@@ -22,7 +22,7 @@ export default function Edit() {
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
-        if (storedToken === ""){
+        if (storedToken === null){
             router.push("/");
             return;
         }

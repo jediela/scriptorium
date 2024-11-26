@@ -21,11 +21,9 @@ export default function Header() {
       const response = await fetch('/api/users/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
       }
-
       const userData = await response.json();
       return { avatar: userData.avatar || DEFAULT_AVATAR, email: userData.email, name: userData.firstName || "Guest" };
     } catch (error) {
@@ -33,9 +31,9 @@ export default function Header() {
     }
   }
   
-
   function handleLogout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     toast.info('Logout successful!');
     setTimeout(() => {
       window.location.href = '/'; 

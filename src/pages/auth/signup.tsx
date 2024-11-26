@@ -102,6 +102,7 @@ export default function Signup(){
                 });
                 const data = await loginResponse.json();
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('userId', data.user.id);
                 toast.success('Profile Created!'); 
                 setTimeout(() => {
                     router.push('/');

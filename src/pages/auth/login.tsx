@@ -47,8 +47,8 @@ export default function Login() {
       
       // Store token and user data in localStorage
       const data = await response.json();
-      const token = data.token;
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.user.id);
       toast.success('Login successful! Redirecting...',); 
 
       // Delay redirect to show message
