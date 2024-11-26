@@ -35,7 +35,7 @@ export default async function handler(req, res) {
 
     // Update Blog
     if (req.method === "POST") {
-        let { title, content, isHidden: requestedIsHidden } = req.body;
+        let { title, content, codeTemplateIds, tagIds, isHidden: requestedIsHidden } = req.body;
 
         // Check if user is an admin (For hiding/unhiding blogs)
         let isHidden, message;
@@ -60,12 +60,13 @@ export default async function handler(req, res) {
                 data: {
                     title: title || blog.title,
                     content: content || blog.content,
+                    codeTemplates: {
+                        set: codeTemplateIds?.map((id) => ({ id })) || [],
+                    },
+                    tags: {
+                        set: tagIds?.map((id) => ({ id })) || [],
+                    },
                     isHidden: isHidden,
-                },
-                select: {
-                    title: true,
-                    content: true,
-                    isHidden: true,
                 },
             });
             res.status(200).json({

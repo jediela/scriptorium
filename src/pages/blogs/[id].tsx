@@ -31,13 +31,13 @@ export default function ViewBlog(){
     const [loggedIn, setLoggedIn] = useState(false);
     const [votes, setVotes] = useState<Vote[]>([]);
     const [canEditBlog, setCanEditBlog] = useState(false);
+    const [blogHidden, setBlogHidden] = useState(false);
 
     useEffect(() => {
         if (id) {
             fetchBlog();
         }
         if (localStorage.getItem('token')) {
-            setCanEditBlog(localStorage.getItem('userId') === String(authorId));
             setLoggedIn(true);
         }
     }, [id, authorId]);
@@ -208,6 +208,14 @@ export default function ViewBlog(){
             setAuthorId(ownerId);
             const blogVotes = data.Vote;
             setVotes(blogVotes);
+            const hidden = data.isHidden;
+            setBlogHidden(hidden);
+            if (hidden && localStorage.getItem('userId') !== String(ownerId)) {
+                router.back();
+            }
+            if(localStorage.getItem('userId') === String(ownerId) && !hidden){
+                setCanEditBlog(true);
+            } 
         } catch (error) {
             console.error("Failed to fetch blog:", error);
         }
@@ -217,6 +225,11 @@ export default function ViewBlog(){
         <Layout>
             <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-6 border-4 border-gray-300 dark:border-gray-600">
 
+                {blogHidden && (
+                    <div className="text-center text-2xl font-bold text-red-600 mb-6">
+                        <h2>**Blog has been hidden by admins.**</h2>
+                    </div>
+                )}                
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
                     <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-4">{title}</h1>
                     {canEditBlog && (
@@ -329,7 +342,6 @@ export default function ViewBlog(){
                         <Spacer y={10} />
                     </>
                 )}
-
 
                 <div>
                     <p className="text-xl font-semibold text-gray-800 dark:text-white">Comments</p>

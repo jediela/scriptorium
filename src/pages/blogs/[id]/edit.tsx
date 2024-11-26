@@ -1,31 +1,60 @@
 import Layout from "@/components/Layout";
 import { Button, Input, Select, SelectItem, SelectSection, Textarea } from "@nextui-org/react";
 import { useTheme } from "next-themes";
-import router from "next/router";
-import React, { useEffect } from "react";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import React from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function Create(){
+export default function EditBlog(){
+    const router = useRouter();
+    const { id } = router.query;
     const {theme} = useTheme();
     const [title, setTitle] = useState('');
     const [titleError, setTitleError] = useState('');
     const [content, setContent] = useState('');
     const [contentError, setContentError] = useState('');
-    const [codeTemplates, setCodeTemplates] = useState<{ id: number; title: string }[]>([]);
-    const [selectedTemplates, setSelectedTemplates] = useState('');
     const [tags, setTags] = useState<{ id: number; name: string }[]>([]);
     const [selectedTags, setSelectedTags] = useState('')
     const [touched, setTouched] = useState<{ title: boolean; content: boolean }>({ title: false, content: false });
+    const [codeTemplates, setCodeTemplates] = useState<{ id: number; title: string }[]>([]);
+    const [selectedTemplates, setSelectedTemplates] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token === null) router.push('/');
-        else{
+        if (id) {
+            const fetchBlog = async () => {
+                try {
+                    const response = await fetch(`/api/blogs/${id}/view`,{
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                    });
+                    if(response.status === 403){
+                        toast.error("Forbidden");
+                        setTimeout(() => {
+                            router.back();
+                        }, 1000);
+                        return;
+                    }
+                    else if (response.status === 404){
+                        toast.error("Blog not found");
+                        setTimeout(() => {
+                            router.back();
+                        }, 1000);
+                        return;
+                    }
+                    const data = await response.json();
+                    setTitle(data.title);
+                    setContent(data.content);
+                    console.log(data.tags)
+                } catch (error) {
+                    console.error("Failed to fetch blog:", error);
+                }
+            };
+            fetchBlog();
             fetchTags();
             fetchCodeTemplates();
         }
-    }, []);
+    }, [id]);
 
     async function fetchTags() {
         try {
@@ -96,7 +125,7 @@ export default function Create(){
             return;
         }
         try {
-            const blogResponse = await fetch('/api/blogs',{
+            const blogResponse = await fetch(`/api/blogs/${id}`,{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,11 +139,9 @@ export default function Create(){
                 }),  
             });
             if(blogResponse.ok){
-                toast.success("Blog Created!");
-                const data = await blogResponse.json();
-                const newBlogId = data.blog.id;
+                toast.success("Blog Updated!");
                 setTimeout(() => {
-                    router.push(`/blogs/${newBlogId}`);
+                    router.back();
                 }, 1500);
             }
             else{
@@ -132,7 +159,7 @@ export default function Create(){
                 className={`w-full max-w-4xl p-10 shadow-md rounded-lg flex flex-col items-left gap-8 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'} border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}
             >  
                 <h2 className={`text-4xl font-semibold text-center mb-6 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                    Create Blog 
+                    Edit Blog 
                 </h2>
                 <Input 
                     isRequired
@@ -213,8 +240,9 @@ export default function Create(){
                 </Select>
 
                 <div className="flex gap-4">
-                    <Button type="submit" color="primary" size="lg">Create Blog</Button>
+                    <Button type="submit" color="primary" size="lg">Save Changes</Button>
                 </div>
+
             </form>
         </Layout>
     );
