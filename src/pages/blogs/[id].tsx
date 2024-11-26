@@ -2,6 +2,7 @@ import CustomDivider from "@/components/CustomDivider";
 import Layout from "@/components/Layout";
 import {Image, Button, Tooltip, Spacer, Input, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
 import { Vote } from "@prisma/client";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 import { useEffect, useState } from "react";
@@ -23,20 +24,23 @@ export default function ViewBlog(){
     const [tags, setTags] = useState<string[]>([]);
     const [templates, setTemplates] = useState<string[]>([]);
     const [author, setAuthor] = useState('');
-    const [report, setReport] = useState('')
+    const [authorId, setAuthorId] = useState();
+    const [report, setReport] = useState('');
     const [reportError, setReportError] = useState('');
     const [touched, setTouched] = useState<{ report: boolean }>({ report: false });
     const [loggedIn, setLoggedIn] = useState(false);
     const [votes, setVotes] = useState<Vote[]>([]);
+    const [canEditBlog, setCanEditBlog] = useState(false);
 
     useEffect(() => {
         if (id) {
             fetchBlog();
         }
         if (localStorage.getItem('token')) {
+            setCanEditBlog(localStorage.getItem('userId') === String(authorId));
             setLoggedIn(true);
         }
-    }, [id]);
+    }, [id, authorId]);
     
     useEffect(() => {
         checkExistingVote();
@@ -200,6 +204,8 @@ export default function ViewBlog(){
             const fname = data.user.firstName;
             const lname = data.user.lastName || "";
             setAuthor(fname + " " + lname);
+            const ownerId = data.user.id;
+            setAuthorId(ownerId);
             const blogVotes = data.Vote;
             setVotes(blogVotes);
         } catch (error) {
@@ -210,7 +216,17 @@ export default function ViewBlog(){
     return(
         <Layout>
             <div className="max-w-7xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-6 border-4 border-gray-300 dark:border-gray-600">
-                <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-4">{title}</h1>
+
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+                    <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-4">{title}</h1>
+                    {canEditBlog && (
+                        <Link href={`${router.asPath}/edit`} passHref>
+                            <Button color="secondary" className="ml-0 sm:ml-auto">
+                                Edit Blog
+                            </Button>
+                        </Link>
+                    )}
+                </div>
 
                 <CustomDivider/>
 

@@ -1,67 +1,66 @@
-import Layout from "@/components/Layout";
-export default function Index(){
+import HomeLayout from "@/components/HomeLayout";
+import Link from "next/link";
 
-  function handleToken(){
-    const token = localStorage.getItem('token');
-    console.log(token);
-  };
+export default function Index() {
+  return (
+    <HomeLayout>
+      <div className="min-h-screen bg-gray-100 dark:bg-black text-gray-900 dark:text-white">
 
-  function logout(){
-    const token = localStorage.getItem('token');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.reload();
-  };
-
-  async function login(){
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: "test@email.com",
-          password: "123"
-        }),
-      });
-      const data = await response.json();
-      const token = data.token;
-      const user = data.user;
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      window.location.reload();
-  };
-
-  return(
-      <Layout>
-        <div className="container mx-auto py-10">
-          <h1 className="text-4xl font-bold text-center">Welcome to Scriptorium</h1>
-          <p className="text-center mt-4 text-gray-600">
-            Explore, write, and share code with others.
+        <div className="max-w-7xl mx-auto text-center px-4 py-10 dark:bg-black bg-gray-100">
+          <h1 className="text-5xl font-bold text-gray-900 mb-4 dark:text-white">
+            Welcome to Scriptorium
+          </h1>
+          <p className="text-lg text-gray-800 mb-6 dark:text-gray-400">
+            A platform to share knowledge, execute code, and collaborate on projects.
           </p>
         </div>
 
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={handleToken}
-        >
-          Log Token
-        </button>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={logout}
-        >
-          Log out
-        </button>
+        <section className="py-10 bg-white dark:bg-gray-800">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-3xl font-semibold text-center text-gray-800 dark:text-white mb-12">
+              Features
+            </h2>
 
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          onClick={login}
-        >
-          Log in
-        </button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                  Create and Share Blogs
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Share your thoughts, document your journey, and inspire others by creating and publishing engaging blogs.
+                </p>
+                <Link href="/blogs" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                    Explore Blogs
+                </Link>
+              </div>
 
-      </Layout>        
+              <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                  Execute Code
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Write, execute, and test your code directly on the platform. No setup required.
+                </p>
+                <Link href="/execute" className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg">
+                    Start Coding
+                </Link>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                  Create Code Templates
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Create reusable code templates and share them with the community. Make coding faster and more efficient.
+                </p>
+                <Link href="/templates" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                    Explore Templates
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </HomeLayout>
   );
 }

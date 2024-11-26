@@ -2,7 +2,6 @@ import Layout from "@/components/Layout";
 import { Button, Input, Select, SelectItem, SelectSection, Textarea } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import router from "next/router";
-import { closeSnackbar, enqueueSnackbar } from "notistack";
 import React, { useEffect } from "react";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -66,49 +65,6 @@ export default function Create(){
             console.error("An error occurred while fetching code templates: ", error);
         }
     }
-    
-    function clickClear(){
-        enqueueSnackbar('Are you sure you want to clear all blog contents?', {
-            action,
-            anchorOrigin: {
-                vertical: 'top',
-                horizontal: 'center'
-            },
-            autoHideDuration: 5000
-        });
-    }
-
-    const action = (snackbarId: any) => (
-        <div className="flex space-x-4">
-            <button
-                className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                onClick={() => {
-                closeSnackbar(snackbarId);
-                clearForm();
-                }}
-            >
-                Clear
-            </button>
-            <button
-                className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                onClick={() => {
-                closeSnackbar(snackbarId);
-                }}
-            >
-                Cancel
-            </button>
-        </div>
-    );
-
-    function clearForm(){
-        setTitle('');
-        setTitleError('');
-        setContent('');
-        setContentError('');
-        setSelectedTags('');
-        setSelectedTemplates('');
-        setTouched({ title: false, content: false });
-    }
 
     function validateTitle(title: string){
         if(title === ""){
@@ -156,8 +112,10 @@ export default function Create(){
             });
             if(blogResponse.ok){
                 toast.success("Blog Created!");
+                const data = await blogResponse.json();
+                const newBlogId = data.blog.id;
                 setTimeout(() => {
-                    router.push('/');
+                    router.push(`/blogs/${newBlogId}`);
                 }, 1500);
             }
             else{
@@ -257,7 +215,6 @@ export default function Create(){
 
                 <div className="flex gap-4">
                     <Button type="submit" color="primary" size="lg">Create Blog</Button>
-                    <Button onClick={clickClear} color="default" size="lg">Clear</Button>
                 </div>
             </form>
         </Layout>
