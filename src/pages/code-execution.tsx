@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import PlainLayout from '@/components/PlainLayout';
+import Layout from '@/components/Layout';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import 'react-toastify/dist/ReactToastify.css';
@@ -91,7 +91,7 @@ export default function CodeExecution() {
   };
 
   return (
-    <PlainLayout>
+    <Layout>
       <ToastContainer
         position="top-center"
         autoClose={2000}
@@ -179,6 +179,6 @@ export default function CodeExecution() {
           size="lg"
         />
       </form>
-    </PlainLayout>
+    </Layout>
   );
 }
