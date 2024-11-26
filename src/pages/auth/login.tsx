@@ -2,12 +2,11 @@ import React from 'react';
 import PlainLayout from '@/components/PlainLayout';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Slide, toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import {Input} from "@nextui-org/input";
 import {EyeFilledIcon} from "public/tools/EyeFilledIcon";
 import {EyeSlashFilledIcon} from "public/tools/EyeSlashFilledIcon";
 import { Button, Link } from '@nextui-org/react';
-import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 
 
@@ -48,14 +47,14 @@ export default function Login() {
       
       // Store token and user data in localStorage
       const data = await response.json();
-      const token = data.token;
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.user.id);
       toast.success('Login successful! Redirecting...',); 
 
       // Delay redirect to show message
       setTimeout(() => {
         router.push('/');
-      }, 1500);
+      }, 2000);
     } catch (err) {
       toast.error('An error occurred, please try again.');
     }
@@ -63,7 +62,6 @@ export default function Login() {
 
   return (
     <PlainLayout>
-      <ToastContainer position='top-center' autoClose={2000} transition={Slide} limit={1} pauseOnFocusLoss={false}/>
       <form
         onSubmit={handleSubmit}
         className={`w-full max-w-sm p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'} border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}

@@ -77,18 +77,6 @@ export default function Header() {
       </NavbarContent>
 
       <NavbarContent className="ml-auto flex items-center gap-4">
-        <Input
-          classNames={{
-            base: "max-w-full sm:max-w-[10rem] h-10",
-            mainWrapper: "h-full",
-            input: "text-small",
-            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
-          }}
-          placeholder="Type to search..."
-          size="sm"
-          startContent={<SearchIcon size={18} width={undefined} height={undefined} />}
-          type="search"
-        />
         <ThemeSwitcher/>
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
