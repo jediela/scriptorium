@@ -1,6 +1,6 @@
 import CustomDivider from "@/components/CustomDivider";
 import Layout from "@/components/Layout";
-import {Image, Button, Tooltip, Spacer, Input, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
+import {Image, Button, Tooltip, Spacer, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
 import { Vote } from "@prisma/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -19,6 +19,7 @@ export default function ViewBlog(){
     const [downvoteIcon, setDownvoteIcon] = useState(DOWNVOTE_ICON);
     const [userVoteValue, setUserVoteValue] = useState(0);
     const [popoverVisible, setPopoverVisible] = useState(false);
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState<string[]>([]);
@@ -35,6 +36,7 @@ export default function ViewBlog(){
 
     useEffect(() => {
         if (id) {
+            fetchUser();
             fetchBlog();
         }
         if (localStorage.getItem('token')) {
@@ -58,6 +60,44 @@ export default function ViewBlog(){
             setDownvoteIcon(DOWNVOTE_ICON);
         }
     }, [userVoteValue]);
+
+    async function hideBlog(hide: boolean, message: string) {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/blogs/${id}`,{
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                isHidden: hide
+            }),  
+        });
+        toast.info(message);
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
+
+    async function fetchUser() {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch('/api/users/me', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.isAdmin) {
+                    setIsAdmin(true);
+                }
+                else setIsAdmin(false);
+            } else {
+                throw new Error("Failed to fetch user data");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     async function reportBlog() {
         setTouched({report: true});
@@ -230,11 +270,21 @@ export default function ViewBlog(){
                         <h2>**Blog has been hidden by admins.**</h2>
                     </div>
                 )}                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+                <div className="flex flex-col items-start mb-4">
                     <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-4">{title}</h1>
+                    {isAdmin && !blogHidden && (
+                        <Button onClick={() => hideBlog(true, "Blog hidden")} color="danger" className="mb-3 ml-0">
+                            Hide Blog
+                        </Button>
+                    )}
+                    {isAdmin && blogHidden && (
+                        <Button onClick={() => hideBlog(false, "Blog unhidden")} color="warning" className="mb-3 ml-0">
+                            Unhide Blog
+                        </Button>
+                    )}
                     {canEditBlog && (
                         <Link href={`${router.asPath}/edit`} passHref>
-                            <Button color="secondary" className="ml-0 sm:ml-auto">
+                            <Button color="secondary" className="ml-0">
                                 Edit Blog
                             </Button>
                         </Link>

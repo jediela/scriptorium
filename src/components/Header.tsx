@@ -12,6 +12,7 @@ export default function Header() {
   const { theme } = useTheme();
   const [user, setUser] = useState({ avatar: DEFAULT_AVATAR, email: null, name: "Guest" });
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Handle token to see if user is logged in (to display avatar)
   async function handleToken() {
@@ -25,6 +26,7 @@ export default function Header() {
         throw new Error('Failed to fetch user data');
       }
       const userData = await response.json();
+      setIsAdmin(userData.isAdmin);
       return { avatar: userData.avatar || DEFAULT_AVATAR, email: userData.email, name: userData.firstName || "Guest" };
     } catch (error) {
       return { avatar: DEFAULT_AVATAR, email: null, name: "Guest" };
@@ -77,18 +79,6 @@ export default function Header() {
       </NavbarContent>
 
       <NavbarContent className="ml-auto flex items-center gap-4">
-        <Input
-          classNames={{
-            base: "max-w-full sm:max-w-[10rem] h-10",
-            mainWrapper: "h-full",
-            input: "text-small",
-            inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
-          }}
-          placeholder="Type to search..."
-          size="sm"
-          startContent={<SearchIcon size={18} width={undefined} height={undefined} />}
-          type="search"
-        />
         <ThemeSwitcher/>
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
@@ -118,6 +108,15 @@ export default function Header() {
               <DropdownItem key="edit" href="/profile/edit" color='primary' className="text-lg text-blue-600">
                 Edit Profile
               </DropdownItem>
+              {isAdmin ? (
+                <DropdownItem key="admin" href="/admin" color="secondary">
+                  Admin Portal
+                </DropdownItem>
+              ) : 
+                <DropdownItem href="/">
+                  Home Page
+                </DropdownItem>
+              }
               <DropdownItem key="logout" color='danger' onClick={handleLogout} className="text-lg text-red-600">
                 Logout
               </DropdownItem>

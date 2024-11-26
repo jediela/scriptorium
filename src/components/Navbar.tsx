@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {Navbar, NavbarBrand, NavbarContent, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar} from "@nextui-org/react";
-import {SearchIcon} from "public/icons/search.jsx";
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 
@@ -12,6 +11,7 @@ export default function Header() {
   const { theme } = useTheme();
   const [user, setUser] = useState({ avatar: DEFAULT_AVATAR, email: null, name: "Guest" });
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Handle token to see if user is logged in (to display avatar)
   async function handleToken() {
@@ -25,6 +25,7 @@ export default function Header() {
         throw new Error('Failed to fetch user data');
       }
       const userData = await response.json();
+      setIsAdmin(userData.isAdmin);
       return { avatar: userData.avatar || DEFAULT_AVATAR, email: userData.email, name: userData.firstName || "Guest" };
     } catch (error) {
       return { avatar: DEFAULT_AVATAR, email: null, name: "Guest" };
@@ -106,6 +107,15 @@ export default function Header() {
               <DropdownItem key="edit" href="/profile/edit" color='primary' className="text-lg text-blue-600">
                 Edit Profile
               </DropdownItem>
+              {isAdmin ? (
+                <DropdownItem key="admin" href="/admin" color="secondary">
+                  Admin Portal
+                </DropdownItem>
+              ) : 
+                <DropdownItem href="/">
+                  Home Page
+                </DropdownItem>
+              }
               <DropdownItem key="logout" color='danger' onClick={handleLogout} className="text-lg text-red-600">
                 Logout
               </DropdownItem>
