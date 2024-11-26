@@ -1,9 +1,9 @@
-import Navbar from "./Header";
+import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { ReactNode, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function HomeLayout({ children }: { children: ReactNode }) {
     const { theme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -21,9 +21,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         data-theme={theme}
         >             
             <Navbar/>
-            <main className="flex-grow w-full max-w-screen-lg mx-auto px-4 py-8">
                 {children}
-            </main>
             <Footer/>
         </div>
     );

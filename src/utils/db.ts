@@ -82,8 +82,8 @@ export async function checkVotedBlog(userId: number, blogId: number) {
     try {
         const existingVote = await prisma.vote.findFirst({
             where: {
-                userId: userId,
-                blogId: blogId,
+                userId,
+                blogId,
             },
         });
         return existingVote;
