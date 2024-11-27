@@ -1,6 +1,6 @@
 import Avatars from "@/components/Avatars";
 import PlainLayout from "@/components/PlainLayout";
-import { Avatar, Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
+import { Avatar, Button, Input, Link } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import router from "next/router";
 import React from "react";
@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 
 export default function Signup(){
     const { theme } = useTheme();
-    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [fname, setFname] = useState('');
     const [lname, setLname] = useState('');
     const [email, setEmail] = useState('');
@@ -127,39 +127,35 @@ export default function Signup(){
                 </h2>
 
                 <Avatar
-                    onClick={onOpen}
+                    onClick={() => setIsModalOpen(true)}
                     className="transition-transform w-32 h-32 border-4 border-gray-400 rounded-full hover:border-gray-600 hover:shadow-lg hover:scale-105"
                     src={avatar}            
                     classNames={{img: "opacity-100",}}
                     size="lg"
                 />
 
-                <Modal 
-                    size="3xl"
-                    isOpen={isOpen} 
-                    onOpenChange={onOpenChange}
-                    placement="auto"
-                    >
-                    <ModalContent>
-                    {(onClose) => (
-                        <ModalBody>
-                            <ModalHeader className="flex flex-col gap-1">Select your avatar</ModalHeader>
+                {isModalOpen && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-semibold">Select Avatar</h3>
+                                <button onClick={() => setIsModalOpen(false)} className="text-lg">&times;</button>
+                            </div>
                             <Avatars
-                                currentAvatar={avatar} // Pass the currently selected avatar
-                                onSelectAvatar={(selectedAvatar: string) => setAvatar(selectedAvatar)} // Update the avatar state when an avatar is selected
+                                currentAvatar={avatar}
+                                onSelectAvatar={(selectedAvatar: string) => setAvatar(selectedAvatar)}
                             />
-                            <ModalFooter>
-                                <Button color="danger" variant="light" onPress={onClose}>
-                                Exit
+                            <div className="mt-4 flex justify-between">
+                                <Button color="danger" variant="light" onPress={() => setIsModalOpen(false)}>
+                                    Exit
                                 </Button>
-                                <Button color="primary" onPress={onClose}>
-                                Select
+                                <Button color="primary" onPress={() => setIsModalOpen(false)}>
+                                    Select
                                 </Button>
-                            </ModalFooter>
-                        </ModalBody>
-                    )}
-                    </ModalContent>
-                </Modal>
+                            </div>
+                        </div>
+                    </div>
+                )}      
 
                 <Input
                     isRequired

@@ -38,7 +38,7 @@ export default function ViewBlog(){
     const [loggedIn, setLoggedIn] = useState(false);
     const [votes, setVotes] = useState<Vote[]>([]);
     const [canEditBlog, setCanEditBlog] = useState(false);
-    const [blogHidden, setBlogHidden] = useState(false);
+    const [blogHidden, setBlogHidden] = useState(false);    
 
     useEffect(() => {
         if (id) {
@@ -383,9 +383,10 @@ export default function ViewBlog(){
                                             onChange={(e) => {
                                                 setReport(e.target.value);
                                                 if (!touched.report) setTouched((prev) => ({ ...prev, report: true }));
-                                            }}                                        />
+                                            }}                                        
+                                        />
                                         <div className="flex justify-center w-full mt-2">
-                                            <Button size="sm" className="w-32" color="danger" onClick={reportBlog}>Submit Report</Button>
+                                            <Button size="sm" className="w-32" color="primary" onClick={reportBlog}>Submit Report</Button>
                                         </div>
                                     </div>
                                 )}

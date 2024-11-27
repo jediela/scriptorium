@@ -33,8 +33,7 @@ export default function Header() {
   }
   
   function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
+    localStorage.clear();
     toast.info('Logout successful!');
     setTimeout(() => {
       window.location.href = '/'; 
