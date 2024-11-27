@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import ReportModal from "./ReportModal";
 import ReplyModal from "./ReplyModal";
+import Replies from "./Replies";
 
 export default function CommentSection() {
     const router = useRouter();
@@ -25,6 +26,7 @@ export default function CommentSection() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [currentCommentId, setCurrentCommentId] = useState<number | null>(null);
+    const [loggedIn, setLoggedIn] = useState(false);
 
     useEffect(() => {
         if (newComment.trim()) {
@@ -41,6 +43,8 @@ export default function CommentSection() {
     }, [votes, comments]);
     
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if(token) setLoggedIn(true);
         if (id) {
             fetchComments();
         }
@@ -58,6 +62,11 @@ export default function CommentSection() {
             setDownvoteIcon(DOWNVOTE_ICON);
         }
     }, [userVoteValue]);    
+
+    const handleNewReply = () => {
+        fetchComments();
+        setIsModalOpen(false);
+    };
 
     async function processVote(commentId: number, voteValue: number) {
         await fetch(`/api/comments/${commentId}/vote`, {
@@ -229,9 +238,11 @@ async function upvoteComment(commentId: number) {
             });
             if (response.ok) {
                 const data = await response.json();
+                
                 const commentsWithVotes = data.comments.map((comment: any) => ({
                     ...comment,
                     voteValue: 0,
+                    authorEmail: comment.user.email,
                 }));
                 setComments(commentsWithVotes);
             } else {
@@ -241,6 +252,7 @@ async function upvoteComment(commentId: number) {
             toast.error("Error fetching comments");
         }
     }
+    
 
     return (
         <div>
@@ -251,75 +263,80 @@ async function upvoteComment(commentId: number) {
                             key={comment.id}
                             className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md shadow-md"
                         >
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between items-center pb-2">
                                 <span className="text-gray-700 dark:text-gray-200">
                                     {comment.content}
                                 </span>
+                                <span className="text-sm text-gray-500 dark:text-gray-300">
+                                    {comment.authorEmail}
+                                </span>
                             </div>
-
-                            <div className="mt-2 flex space-x-4">
-                                <Button
-                                    size="sm"
-                                    color="secondary"
-                                    className="hover:bg-gray-200 dark:hover:bg-gray-600"
-                                    onClick={() => {
-                                        setCurrentCommentId(comment.id);
-                                        setIsReplyModalOpen(true);
-                                    }}
-                                >
-                                    Reply
-                                </Button>
-                                
-                                <div className="flex space-x-1">
-                                    <Tooltip
+                            {loggedIn && (
+                                <div className="mt-2 flex space-x-4 pb-5">
+                                    <Button
                                         size="sm"
-                                        content="Upvote Comment"
-                                        showArrow={true}
-                                        delay={0}
-                                        closeDelay={0}
-                                        color="success"
-                                        className="text-white rounded-md p-2 shadow-lg"
+                                        color="secondary"
+                                        className="hover:bg-gray-200 dark:hover:bg-gray-600"
+                                        onClick={() => {
+                                            setCurrentCommentId(comment.id);
+                                            setIsReplyModalOpen(true);
+                                        }}
                                     >
-                                        <Image
-                                            width={35}
-                                            src={comment.voteValue === 1 ? UPVOTE_FILLED : UPVOTE_ICON}
-                                            className="opacity-100"
-                                            alt="Upvote Icon"
-                                            onClick={() => upvoteComment(comment.id)}
-                                        />
-                                    </Tooltip>
-                                    <Tooltip
-                                        size="sm"
-                                        content="Downvote Comment"
-                                        showArrow={true}
-                                        delay={0}
-                                        closeDelay={0}
-                                        color="danger"
-                                        className="text-white rounded-md p-2 shadow-lg"
-                                    >
-                                        <Image
-                                            width={35}
-                                            src={comment.voteValue === -1 ? DOWNVOTE_FILLED : DOWNVOTE_ICON}
-                                            className="opacity-100"
-                                            alt="Downvote Icon"
-                                            onClick={() => downvoteComment(comment.id)}
-                                        />
-                                    </Tooltip>
+                                        Reply
+                                    </Button>
+                                    
+                                    <div className="flex space-x-1">
+                                        <Tooltip
+                                            size="sm"
+                                            content="Upvote Comment"
+                                            showArrow={true}
+                                            delay={0}
+                                            closeDelay={0}
+                                            color="success"
+                                            className="text-white rounded-md p-2 shadow-lg"
+                                        >
+                                            <Image
+                                                width={35}
+                                                src={comment.voteValue === 1 ? UPVOTE_FILLED : UPVOTE_ICON}
+                                                className="opacity-100"
+                                                alt="Upvote Icon"
+                                                onClick={() => upvoteComment(comment.id)}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip
+                                            size="sm"
+                                            content="Downvote Comment"
+                                            showArrow={true}
+                                            delay={0}
+                                            closeDelay={0}
+                                            color="danger"
+                                            className="text-white rounded-md p-2 shadow-lg"
+                                        >
+                                            <Image
+                                                width={35}
+                                                src={comment.voteValue === -1 ? DOWNVOTE_FILLED : DOWNVOTE_ICON}
+                                                className="opacity-100"
+                                                alt="Downvote Icon"
+                                                onClick={() => downvoteComment(comment.id)}
+                                            />
+                                        </Tooltip>
+                                    </div>
+                                        <h1 className="ml-2 text-2xl font-bold">{comment.voteValue}</h1>
+                                        <Button
+                                            size="sm"
+                                            color="danger"
+                                            className="hover:bg-gray-200 dark:hover:bg-gray-600"
+                                            onClick={() => {
+                                                setCurrentCommentId(comment.id);
+                                                setIsModalOpen(true);
+                                            }}
+                                        >
+                                            Report
+                                        </Button>
                                 </div>
+                            )}
 
-                                <Button
-                                    size="sm"
-                                    color="danger"
-                                    className="hover:bg-gray-200 dark:hover:bg-gray-600"
-                                    onClick={() => {
-                                        setCurrentCommentId(comment.id);
-                                        setIsModalOpen(true);
-                                    }}
-                                >
-                                    Report
-                                </Button>
-                            </div>
-
+                            <Replies commentId={comment.id} />
                         </div>
                     ))
                 ) : (
@@ -337,24 +354,28 @@ async function upvoteComment(commentId: number) {
                 isOpen={isReplyModalOpen}
                 onClose={() => setIsReplyModalOpen(false)}
                 commentId={currentCommentId}
+                onReplySubmit={handleNewReply} 
             />
 
-            <form className="pt-7" onSubmit={handleAddComment}>
-            <Textarea
-                label="Add a comment"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-            />
+            {loggedIn && (
+                <form className="pt-7" onSubmit={handleAddComment}>
+                    <Textarea
+                        label="Add a comment"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                    />
 
-            <Button
-                type="submit"
-                size="sm"
-                color="primary"
-                isDisabled={disableSubmit}
-            >
-                Post Comment
-            </Button>
-            </form>
+                    <Button
+                        type="submit"
+                        size="sm"
+                        color="primary"
+                        isDisabled={disableSubmit}
+                    >
+                        Post Comment
+                    </Button>
+                </form>
+            )}
+
         </div>
 
     );

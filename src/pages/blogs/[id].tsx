@@ -265,6 +265,9 @@ export default function ViewBlog(){
             setVotes(blogVotes);
             const hidden = data.isHidden;
             setBlogHidden(hidden);
+            if (hidden && isAdmin === null) {
+                return;
+            }            
             if (hidden && localStorage.getItem('userId') !== String(ownerId) && !isAdmin) {
                 router.back();
             }            
