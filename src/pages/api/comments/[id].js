@@ -3,49 +3,46 @@ import prisma, { getComment } from "@/utils/db";
 
 export default async function handler(req, res) {
     const user = await authenticate(req, res);
-    if (!user){
+    if (!user) {
         return res.status(401).json({ error: "Unauthorized: You need to be logged in to perform this action." });
     }
-    
+
     const { id } = req.query;
     const commentId = Number(id);
-    if (!id) {
-        return res.status(400).json({ error: "Missing ID" });
+
+    if (!commentId) {
+        return res.status(400).json({ error: "Invalid ID format" });
     }
 
     const comment = await getComment(commentId);
-    if (!comment){
+    if (!comment) {
         return res.status(404).json({ error: "Comment not found." });
     }
 
-    // Check if authenticated user owns the blog
-    if (comment.userId !== user.id) {
+    if (comment.userId !== user.id && !user.isAdmin) {
         return res.status(403).json({ error: "You do not have permission to modify this comment." });
     }
 
     // Edit comment
-    if (req.method === "POST"){
+    if (req.method === "POST") {
         let { content, isHidden: requestedIsHidden } = req.body;
-
-        // Check if user is an admin (For hiding/unhiding comments)
         let isHidden, message;
         if (user.isAdmin) {
             isHidden = requestedIsHidden;
             message = "Comment Hidden."
-        } 
-        else {
-            if (blog.isHidden) {
-                return res.status(403).json({ message: "This blog is hidden and cannot be edited." });
+        } else {
+            if (comment.isHidden) {
+                return res.status(403).json({ message: "This comment is hidden and cannot be edited." });
             }
-            isHidden = blog.isHidden;
-            message = "Only admins can hide blogs."
+            isHidden = comment.isHidden;
+            message = "Only admins can hide comments."
         }
 
         try {
             const updatedComment = await prisma.comment.update({
-                where: { id },
+                where: { id: commentId },
                 data: {
-                    content: content || blog.content,
+                    content: content || comment.content,
                     isHidden: isHidden,
                 },
                 select: {
@@ -58,16 +55,17 @@ export default async function handler(req, res) {
                 updatedComment: updatedComment,
             });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: "Error updating comment." });
         }
     }
 
     // Delete comment
-    else if (req.method === "DELETE"){
+    else if (req.method === "DELETE") {
         try {
             if (!comment) {
                 return res.status(404).json({ error: "Comment not found." });
-            }    
+            }
             if (comment.userId !== user.id) {
                 return res.status(403).json({ error: "Forbidden: You can only delete your own comments." });
             }
@@ -92,7 +90,7 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: "Error deleting comment." });
         }
     }
-    else{
+    else {
         return res.status(405).json({ error: "Method not allowed" });
     }
 }

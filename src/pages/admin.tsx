@@ -53,8 +53,10 @@ export default function Admin() {
     const commentColumns = [
         { key: "id", label: "Comment ID" },
         { key: "userId", label: "User ID" },
+        { key: "content", label: "Comment" },
         { key: "reportCount", label: "Number of Reports" },
         { key: "status", label: "Status" },
+        { key: "Hide", label: "Hide"}
     ];
 
     async function fetchUser(token: string) {
@@ -79,6 +81,48 @@ export default function Admin() {
         } catch (error) {
             setIsAdmin(false);
             router.replace("/");
+        }
+    }
+
+    async function hideComment(commentId: number) {
+        try {
+            const response = await fetch(`/api/comments/${commentId}`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    isHidden: true
+                }),  
+            })
+            if(response.ok) {
+                toast.success("Comment Hidden");
+                fetchContent(localStorage.getItem('token') || "")
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function unhideComment(commentId: number) {
+        try {
+            const response = await fetch(`/api/comments/${commentId}`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    isHidden: false
+                }),  
+            })
+            if(response.ok) {
+                toast.success("Comment unhidden");
+                fetchContent(localStorage.getItem('token') || "");
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -185,7 +229,6 @@ export default function Admin() {
                 </TableBody>
             </Table>
 
-
             <h2 className={`text-4xl font-semibold mt-8 mb-3 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>Reported Comments </h2>
             <Table aria-label="Reported Comments Table" className="border rounded-md shadow-md w-full">
                 <TableHeader>
@@ -196,35 +239,43 @@ export default function Admin() {
                     ))}
                 </TableHeader>
                 <TableBody emptyContent="No reported comments available">
-                    {reportedComments.length === 0 ? (
-                        <TableRow>
-                            <TableCell colSpan={commentColumns.length} className="text-center">
-                                No reported comments available.
-                            </TableCell>
-                        </TableRow>
-                    ) : (
-                        reportedComments.map((comment) => (
-                            <TableRow key={comment.id}>
-                                {commentColumns.map((column) => (
-                                    <TableCell key={column.key} className="text-center">
-                                        {column.key === "id" ? (
-                                            <Link className="text-blue-500 hover:underline" href={`/comments/${comment.id}`}>
-                                                {comment.id}
-                                            </Link>
-                                        ) : column.key === "reportCount" ? (
-                                            comment.reports.length
-                                        ) : column.key === "status" ? (
-                                            <span className={comment.isHidden ? "text-danger" : "text-success"}>
-                                                {comment.isHidden ? "Hidden" : "Viewable"}
-                                            </span>
+                    {reportedComments.map((comment) => (
+                        <TableRow key={comment.id}>
+                            {commentColumns.map((column) => (
+                                <TableCell key={column.key} className="text-center">
+                                    {column.key === "id" ? (
+                                        <Link className="text-blue-500 hover:underline" href={`/comments/${comment.id}`}>
+                                            {comment.id}
+                                        </Link>
+                                    ) : column.key === "reportCount" ? (
+                                        comment.reports.length
+                                    ) : column.key === "status" ? (
+                                        <span className={comment.isHidden ? "text-danger" : "text-success"}>
+                                            {comment.isHidden ? "Hidden" : "Viewable"}
+                                        </span>
+                                    ) : column.key === "Hide" ? (
+                                        comment.isHidden ? (
+                                            <Button
+                                                className="bg-warning hover:bg-warning-dark text-white"
+                                                onClick={() => unhideComment(comment.id)}
+                                            >
+                                                Unhide
+                                            </Button>
                                         ) : (
-                                            String(comment[column.key as keyof ReportedComment])
-                                        )}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
+                                            <Button
+                                                className="bg-secondary hover:bg-secondary-dark text-white"
+                                                onClick={() => hideComment(comment.id)}
+                                            >
+                                                Hide
+                                            </Button>
+                                        )
+                                    ) : (
+                                        String(comment[column.key as keyof ReportedComment])
+                                    )}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
                 </TableBody>
             </Table>
         </Layout>

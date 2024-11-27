@@ -39,6 +39,7 @@ export default function ViewBlog(){
     const [votes, setVotes] = useState<Vote[]>([]);
     const [canEditBlog, setCanEditBlog] = useState(false);
     const [blogHidden, setBlogHidden] = useState(false);    
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
@@ -56,7 +57,7 @@ export default function ViewBlog(){
         if (id) {
             fetchBlog();
         }
-    }, [id]);
+    }, [id, userVoteValue]);
 
     useEffect(() => {
         if (userVoteValue === 1) {
@@ -249,6 +250,7 @@ export default function ViewBlog(){
                 return;
             }
             const data = await response.json();
+            setTotal(data.voteValue);
             setTitle(data.title);
             setContent(data.content);
             const resTags = data.tags.map((tag: { name: any; }) => tag.name).join(", ");
@@ -339,7 +341,7 @@ export default function ViewBlog(){
 
                 {loggedIn && (
                     <>
-                        <div className="flex">
+                        <div className="flex items-center">
                             <Tooltip content="Upvote Blog" showArrow={true} delay={0} closeDelay={0} color="success" className="text-white rounded-md p-2 shadow-lg">
                                 <Image
                                     width={40}
@@ -359,6 +361,7 @@ export default function ViewBlog(){
                                     onClick={downvoteBlog}
                                 />
                             </Tooltip>
+                            <h1 className="ml-2 text-2xl font-bold">{total}</h1>
                         </div>
 
                         <Popover 
