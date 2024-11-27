@@ -43,17 +43,21 @@ export default function ViewBlog(){
     useEffect(() => {
         if (id) {
             fetchUser();
+        }
+    }, [id]);
+    
+    useEffect(() => {
+        if (isAdmin !== null && loggedIn) {
             fetchBlog();
         }
+    }, [isAdmin, loggedIn, id]);
+    
+    useEffect(() => {
         if (localStorage.getItem('token')) {
             setLoggedIn(true);
         }
-    }, [id, authorId]);
+    }, []);
     
-    useEffect(() => {
-        checkExistingVote();
-    }, [votes]);
-
     useEffect(() => {
         if (userVoteValue === 1) {
             setUpvoteIcon(UPVOTE_FILLED);
@@ -66,6 +70,10 @@ export default function ViewBlog(){
             setDownvoteIcon(DOWNVOTE_ICON);
         }
     }, [userVoteValue]);
+
+    useEffect(() => {
+        checkExistingVote();
+    }, [votes]);
 
     async function hideBlog(hide: boolean, message: string) {
         const token = localStorage.getItem('token');
@@ -255,9 +263,9 @@ export default function ViewBlog(){
             setVotes(blogVotes);
             const hidden = data.isHidden;
             setBlogHidden(hidden);
-            if (hidden && localStorage.getItem('userId') !== String(ownerId)) {
+            if (hidden && localStorage.getItem('userId') !== String(ownerId) && !isAdmin) {
                 router.back();
-            }
+            }            
             if(localStorage.getItem('userId') === String(ownerId) && !hidden){
                 setCanEditBlog(true);
             } 
