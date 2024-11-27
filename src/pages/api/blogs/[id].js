@@ -35,15 +35,18 @@ export default async function handler(req, res) {
 
     // Update Blog
     if (req.method === "POST") {
-        let { title, content, isHidden: requestedIsHidden } = req.body;
+        let { title, content, codeTemplateIds, tagIds, isHidden: requestedIsHidden } = req.body;
 
         // Check if user is an admin (For hiding/unhiding blogs)
         let isHidden, message;
         if (user.isAdmin) {
-            isHidden = requestedIsHidden;
-            message = "Blog Hidden."
-        } 
-        else {
+            if (requestedIsHidden !== undefined && requestedIsHidden !== blog.isHidden) {
+                isHidden = requestedIsHidden;
+                message = requestedIsHidden ? "Blog Hidden." : "Blog Unhidden.";
+            } else {
+                isHidden = blog.isHidden;
+            }
+        } else {
             if (blog.isHidden) {
                 return res.status(403).json({ message: "This blog is hidden and cannot be edited." });
             }
@@ -57,12 +60,13 @@ export default async function handler(req, res) {
                 data: {
                     title: title || blog.title,
                     content: content || blog.content,
+                    codeTemplates: {
+                        set: codeTemplateIds?.map((id) => ({ id })) || [],
+                    },
+                    tags: {
+                        set: tagIds?.map((id) => ({ id })) || [],
+                    },
                     isHidden: isHidden,
-                },
-                select: {
-                    title: true,
-                    content: true,
-                    isHidden: true,
                 },
             });
             res.status(200).json({
@@ -72,6 +76,11 @@ export default async function handler(req, res) {
         } catch (error) {
             res.status(500).json({ error: "Error updating blog." });
         }
+    }
+
+    // Get blog
+    else if (req.method === "GET"){
+        return res.status(200).json(blog);
     }
 
     // Delete Blog

@@ -57,14 +57,6 @@ export default async function handler(req, res) {
         const updatedUser = await prisma.user.update({
             where: { id: Number(id) },
             data: dataToUpdate,
-            select: {
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatar: true,
-                phoneNumber: true,
-                isAdmin: true,
-            },
         });
         res.status(200).json({
             "message": "Update Successful",

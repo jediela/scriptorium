@@ -9,7 +9,8 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: "Unauthorized: You need to be logged in to perform this action." });
         }
 
-        const { blogId, voteValue} = req.body;
+        let { blogId, voteValue} = req.body;
+        blogId = Number(blogId);
         if (!blogId || !voteValue){
             return res.status(400).json({message: "Please provide the required fields",});        
         }
@@ -67,16 +68,18 @@ export default async function handler(req, res) {
     
     // Remove vote
     else if (req.method === "DELETE"){
-        const { id: blogId } = req.query;
+        const user = await authenticate(req, res);
+        let { id: blogId } = req.query;
         if (!blogId){
             return res.status(400).json({ error: "Blog ID is required" });
         }
+        blogId = Number(blogId);
         const blog = await getBlog(blogId);
         if (!blog){
             return res.status(404).json({ error: "Blog not found." });
         }
         try {
-            const existingVote = await checkVotedBlog(user.id, Number(blogId));            
+            const existingVote = await checkVotedBlog(Number(user.id), Number(blogId));         
             if (!existingVote) {
                 return res.status(404).json({ error: "Vote not found." });
             }

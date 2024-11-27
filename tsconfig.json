@@ -25,7 +25,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "tailwind.config.js", "src/pages/api/admin/index.js"  ],
+, "tailwind.config.js", "src/pages/api/admin/index.js", "src/pages/_app.tsx"  ],
   "exclude": [
     "node_modules"
   ]
