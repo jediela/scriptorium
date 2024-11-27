@@ -13,7 +13,6 @@ docker build -t swift-executor ./docker/swift
 docker build -t rust-executor ./docker/rust
 docker build -t perl-executor ./docker/perl
 docker build -t haskell-executor ./docker/haskell
-docker build -t dart-executor ./docker/dart
 
 echo "Running database migrations..."
 npx prisma migrate dev

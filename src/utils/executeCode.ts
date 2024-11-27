@@ -69,8 +69,6 @@ function getDockerImage(language: string): string {
       return 'perl-executor';
     case 'haskell':
       return 'haskell-executor';
-    case 'dart':
-      return 'dart-executor';
     default:
       throw new Error('Unsupported language');
   }

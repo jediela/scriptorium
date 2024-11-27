@@ -51,7 +51,6 @@ export default function CodeExecution() {
     rust: 'rust',
     perl: 'perl',
     haskell: 'haskell',
-    dart: 'dart',
   };
 
   const monacoLanguage = languageMappings[language] || 'plaintext';
@@ -92,14 +91,6 @@ export default function CodeExecution() {
 
   return (
     <Layout>
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        transition={Slide}
-        limit={1}
-        pauseOnFocusLoss={false}
-        theme={theme}
-      />
       <form
         onSubmit={handleRunCode}
         className={`w-full max-w-2xl p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${
