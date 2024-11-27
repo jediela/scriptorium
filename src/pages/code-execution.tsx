@@ -5,13 +5,20 @@ import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 import { Editor } from '@monaco-editor/react';
+import { useRouter } from 'next/router';
 
 export default function CodeExecution() {
-  const [code, setCode] = useState<string>('');
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>('');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const { theme } = useTheme();
+  
+  const router = useRouter();
+  const { code: initialCode, language: initialLanguage } = router.query;
+  const [code, setCode] = useState<string>(initialCode as string || '');
+  const [language, setLanguage] = useState<string>(initialLanguage as string || 'javascript');
+  const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
+
 
   const languageOptions = [
     { key: 'javascript', name: 'JavaScript' },
@@ -26,9 +33,6 @@ export default function CodeExecution() {
     { key: 'haskell', name: 'Haskell' },
     { key: 'dart', name: 'Dart' },
   ];
-
-  const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
-  const [language, setLanguage] = useState('javascript');
 
   const handleLanguageChange = (keys: any) => {
     setSelectedLanguage(keys);
@@ -93,7 +97,7 @@ export default function CodeExecution() {
     <Layout>
       <form
         onSubmit={handleRunCode}
-        className={`w-full max-w-2xl p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${
+        className={`w-full p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${
           theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
         } border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}
       >
