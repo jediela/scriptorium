@@ -24,6 +24,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     where: {
                         isHidden: false,
                     },
+                    include: {
+                        user: {
+                            select: {
+                                email: true,
+                            },
+                        },
+                    },
                 },
                 reports: true,
                 Vote: true,

@@ -41,23 +41,23 @@ export default function ViewBlog(){
     const [blogHidden, setBlogHidden] = useState(false);    
 
     useEffect(() => {
-        if (id) {
-            fetchUser();
-        }
-    }, [id]);
-    
-    useEffect(() => {
-        if (isAdmin !== null && loggedIn) {
-            fetchBlog();
-        }
-    }, [isAdmin, loggedIn, id]);
-    
-    useEffect(() => {
         if (localStorage.getItem('token')) {
             setLoggedIn(true);
         }
     }, []);
-    
+
+    useEffect(() => {
+        if (loggedIn) {
+            fetchUser();
+        }
+    }, [loggedIn]);
+
+    useEffect(() => {
+        if (id) {
+            fetchBlog();
+        }
+    }, [id]);
+
     useEffect(() => {
         if (userVoteValue === 1) {
             setUpvoteIcon(UPVOTE_FILLED);
