@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import ReportModal from "./ReportModal";
+import ReplyModal from "./ReplyModal";
 
 export default function CommentSection() {
     const router = useRouter();
@@ -19,14 +20,11 @@ export default function CommentSection() {
     const [upvoteIcon, setUpvoteIcon] = useState(UPVOTE_ICON);
     const [downvoteIcon, setDownvoteIcon] = useState(DOWNVOTE_ICON);
     const [votes, setVotes] = useState<Vote[]>([]);
-    const [touched, setTouched] = useState<{ report: boolean }>({ report: false });
     const [reportError, setReportError] = useState('');
     const [report, setReport] = useState('');
-
-
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [currentCommentId, setCurrentCommentId] = useState<number | null>(null);
-
 
     useEffect(() => {
         if (newComment.trim()) {
@@ -37,10 +35,11 @@ export default function CommentSection() {
     }, [newComment]);
 
     useEffect(() => {
-        checkExistingCommentVote();
-    }, [votes]);
+        if (votes.length > 0 && comments.length > 0) {
+            checkExistingCommentVote();
+        }
+    }, [votes, comments]);
     
-
     useEffect(() => {
         if (id) {
             fetchComments();
@@ -58,7 +57,7 @@ export default function CommentSection() {
             setUpvoteIcon(UPVOTE_ICON);
             setDownvoteIcon(DOWNVOTE_ICON);
         }
-    }, [userVoteValue]);
+    }, [userVoteValue]);    
 
     async function processVote(commentId: number, voteValue: number) {
         await fetch(`/api/comments/${commentId}/vote`, {
@@ -72,14 +71,13 @@ export default function CommentSection() {
                 voteValue,
             }),
         });
+        setUserVoteValue(voteValue);
         setComments((prevComments) =>
             prevComments.map((comment) =>
                 comment.id === commentId ? { ...comment, voteValue } : comment
             )
         );
-        setUserVoteValue(voteValue);
-    }
-    
+    }    
 
     function checkExistingCommentVote() {
         const commentId = Number(id);
@@ -104,31 +102,32 @@ export default function CommentSection() {
         }
     }
     
-    async function upvoteComment(commentId: number) {
-        try {
-            const comment = comments.find((c) => c.id === commentId);
-            if (comment.voteValue === 1) {
-                await deleteVote(commentId);
-                setComments((prevComments) =>
-                    prevComments.map((c) =>
-                        c.id === commentId ? { ...c, voteValue: 0 } : c
-                    )
-                );
-                toast.info("Upvote removed.");
-            } else {
-                await processVote(commentId, 1);
-                setComments((prevComments) =>
-                    prevComments.map((c) =>
-                        c.id === commentId ? { ...c, voteValue: 1 } : c
-                    )
-                );
-                toast.success("Comment upvoted.");
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error("An error occurred while voting. Please try again.");
+async function upvoteComment(commentId: number) {
+    try {
+        const comment = comments.find((c) => c.id === commentId);
+        if (comment.voteValue === 1) {
+            await deleteVote(commentId);
+            setComments((prevComments) =>
+                prevComments.map((c) =>
+                    c.id === commentId ? { ...c, voteValue: 0 } : c
+                )
+            );
+            toast.info("Upvote removed.");
+        } else {
+            await processVote(commentId, 1);
+            setComments((prevComments) =>
+                prevComments.map((c) =>
+                    c.id === commentId ? { ...c, voteValue: 1 } : c
+                )
+            );
+            toast.success("Comment upvoted.");
         }
+    } catch (error) {
+        console.error(error);
+        toast.error("An error occurred while voting. Please try again.");
     }
+}
+
     
     async function downvoteComment(commentId: number) {
         try {
@@ -242,10 +241,6 @@ export default function CommentSection() {
             toast.error("Error fetching comments");
         }
     }
-    
-    function handleReport(commentId: number, reportReason: string): void {
-        throw new Error("Function not implemented.");
-    }
 
     return (
         <div>
@@ -267,6 +262,10 @@ export default function CommentSection() {
                                     size="sm"
                                     color="secondary"
                                     className="hover:bg-gray-200 dark:hover:bg-gray-600"
+                                    onClick={() => {
+                                        setCurrentCommentId(comment.id);
+                                        setIsReplyModalOpen(true);
+                                    }}
                                 >
                                     Reply
                                 </Button>
@@ -315,7 +314,7 @@ export default function CommentSection() {
                                     onClick={() => {
                                         setCurrentCommentId(comment.id);
                                         setIsModalOpen(true);
-                                      }}
+                                    }}
                                 >
                                     Report
                                 </Button>
@@ -332,9 +331,13 @@ export default function CommentSection() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 commentId={currentCommentId}
-                onReport={handleReport}
             />
-      
+
+            <ReplyModal
+                isOpen={isReplyModalOpen}
+                onClose={() => setIsReplyModalOpen(false)}
+                commentId={currentCommentId}
+            />
 
             <form className="pt-7" onSubmit={handleAddComment}>
             <Textarea

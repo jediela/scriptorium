@@ -6,10 +6,9 @@ interface ReportModalProps {
     isOpen: boolean;
     onClose: () => void;
     commentId: number | null;
-    onReport: (commentId: number, reportReason: string) => void;
-  }
+}
   
-  export function ReportModal({ isOpen, onClose, commentId, onReport }: ReportModalProps) {
+export function ReportModal({ isOpen, onClose, commentId, }: ReportModalProps) {
   const [reportReason, setReportReason] = useState('');
   const [touched, setTouched] = useState(false);
   const [reportError, setReportError] = useState('');
@@ -42,7 +41,8 @@ interface ReportModalProps {
                 commentId,
                 reason: reportReason
             }),  
-        });        toast.success('Comment reported');
+        });        
+        toast.success('Comment reported');
         onClose();
       } catch (error) {
         console.error(error);
@@ -57,7 +57,7 @@ interface ReportModalProps {
     >
       <div className="fixed inset-0 bg-black opacity-50" onClick={onClose}></div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg w-full z-10">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Report Comment</h2>
+        <h2 color='primary' className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Report Comment</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">Reason for report</label>
