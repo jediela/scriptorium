@@ -51,6 +51,26 @@ export default async function handler(req, res) {
         try {
             // Default sorted view 
             if (!title && !content && !tags && !codeTemplates) {
+                // Total counts for blogs and comments
+                const totalBlogs = await prisma.blog.count({
+                    where: {
+                        OR: [
+                            { isHidden: false },
+                            { userId: userId ? parseInt(userId) : undefined }
+                        ]
+                    }
+                });
+            
+                const totalComments = await prisma.comment.count({
+                    where: {
+                        OR: [
+                            { isHidden: false },
+                            { userId: userId ? parseInt(userId) : undefined }
+                        ]
+                    }
+                });
+            
+                // Pagination logic for blogs
                 const blogs = await prisma.blog.findMany({
                     where: {
                         OR: [
@@ -61,7 +81,7 @@ export default async function handler(req, res) {
                     skip: (page - 1) * parseInt(pageSize, 10),
                     take: parseInt(pageSize, 10),
                 });
-
+            
                 const blogsWithVotes = await Promise.all(
                     blogs.map(async (blog) => {
                         const totalVotes = await prisma.vote.aggregate({
@@ -77,8 +97,9 @@ export default async function handler(req, res) {
                         };
                     })
                 );
-
+            
                 const blogsSortedByVote = blogsWithVotes.sort((a, b) => b.sumOfVotes - a.sumOfVotes);
+            
                 const comments = await prisma.comment.findMany({
                     where: {
                         OR: [
@@ -104,63 +125,83 @@ export default async function handler(req, res) {
                         };
                     })
                 );
+            
                 const commentsSortedByVote = commentsWithVotes.sort((a, b) => b.sumOfVotes - a.sumOfVotes);
-                return res.status(200).json({ blogsSortedByVote, commentsSortedByVote });
-            }           
-        // Specified search
-        else {                
-            let where = {};
-
-            if (title) {
-                where.title = { contains: title, };
-            } 
-            if (content) {
-                where.content = { contains: content, };
-            } 
-            if (tags) {
-                where.tags = { some: { name: { contains: tags, } } };
-            } 
-            if (codeTemplates) {
-                where.codeTemplates = { some: { title: { contains: codeTemplates, } } };
-            }
-            const totalItems = await prisma.blog.count({ where });
-
-            const filteredBlogs = await prisma.blog.findMany({
-                where,
-                skip: (page - 1) * parseInt(pageSize, 10),
-                take: parseInt(pageSize, 10),
-                include: { Vote: true, user: true, tags: true, codeTemplates: true },
-            });
-    
-            // Process votes for filtered blogs
-            const filteredBlogsWithVotes = await Promise.all(
-                filteredBlogs.map(async (blog) => {
+            
+                // Calculate total pages
+                const totalBlogPages = Math.ceil(totalBlogs / parseInt(pageSize, 10));
+                const totalCommentPages = Math.ceil(totalComments / parseInt(pageSize, 10));
+            
+                return res.status(200).json({
+                    blogsSortedByVote,
+                    commentsSortedByVote,
+                    pagination: {
+                        currentPage: page,
+                        totalBlogPages,
+                        totalCommentPages,
+                    },
+                });
+            }        
+            // Specified search
+            else {                
+            try {
+                let where = {};
+            
+                if (title) {
+                  where.title = { contains: title };
+                }
+                if (content) {
+                  where.content = { contains: content };
+                }
+                if (tags) {
+                  where.tags = { some: { name: { contains: tags } } };
+                }
+                if (codeTemplates) {
+                  where.codeTemplates = { some: { title: { contains: codeTemplates } } };
+                }
+            
+                const totalItems = await prisma.blog.count({ where });
+            
+                const filteredBlogs = await prisma.blog.findMany({
+                  where,
+                  skip: (page - 1) * parseInt(pageSize, 10),
+                  take: parseInt(pageSize, 10),
+                  include: { Vote: true, user: true, tags: true, codeTemplates: true },
+                });
+            
+                const filteredBlogsWithVotes = await Promise.all(
+                  filteredBlogs.map(async (blog) => {
                     const totalVotes = await prisma.vote.aggregate({
-                        _count: { value: true },
-                        _sum: { value: true },
-                        where: { blogId: blog.id },
+                      _count: { value: true },
+                      _sum: { value: true },
+                      where: { blogId: blog.id },
                     });
-
+            
                     return {
-                        ...blog,
-                        voteCount: totalVotes._count.value,
-                        sumOfVotes: totalVotes._sum.value || 0,
+                      ...blog,
+                      voteCount: totalVotes._count.value,
+                      sumOfVotes: totalVotes._sum.value || 0,
                     };
-                })
-            );
-            if (filteredBlogsWithVotes.length === 0) {
-                return res.status(404).json({ message: "No blogs found matching the criteria." });
+                  })
+                );
+            
+                if (filteredBlogsWithVotes.length === 0) {
+                  return res.status(404).json({ message: "No blogs found matching the criteria." });
+                }
+            
+                res.status(200).json({
+                    blogsSortedByVote: filteredBlogsWithVotes,
+                    pagination: {
+                        page: parseInt(page),
+                        limit: parseInt(pageSize, 10),
+                        totalPages: Math.ceil(totalItems / parseInt(pageSize, 10)),
+                        totalItems,
+                    },
+                });
+                } catch (error) {
+                    return res.status(500).json({ error: "Error fetching blogs." });
+                }
             }
-            res.status(200).json({
-                blogs: filteredBlogsWithVotes,
-                pagination: {
-                    page: parseInt(page),
-                    limit: parseInt(pageSize, 10),
-                    totalPages: Math.ceil(totalItems / parseInt(pageSize, 10)),
-                    totalItems,
-                },
-            });
-        }
 
         } catch (error) {
             return res.status(500).json({ error: "Error fetching blogs." });
