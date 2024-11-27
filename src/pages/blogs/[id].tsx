@@ -8,6 +8,11 @@ import React, { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+interface CodeTemplate {
+    id: number;
+    title: string;
+}
+
 export default function ViewBlog(){
     const router = useRouter();
     const { id } = router.query;
@@ -23,7 +28,7 @@ export default function ViewBlog(){
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState<string[]>([]);
-    const [templates, setTemplates] = useState<string[]>([]);
+    const [templates, setTemplates] = useState<CodeTemplate[]>([]);
     const [author, setAuthor] = useState('');
     const [authorId, setAuthorId] = useState();
     const [report, setReport] = useState('');
@@ -239,8 +244,7 @@ export default function ViewBlog(){
             setContent(data.content);
             const resTags = data.tags.map((tag: { name: any; }) => tag.name).join(", ");
             setTags(resTags);
-            const resTemplates = data.codeTemplates.map((codeTemplate: { title: any; }) => codeTemplate.title).join(", ");
-            setTemplates(resTemplates);
+            setTemplates(data.codeTemplates);
             const fname = data.user.firstName;
             const lname = data.user.lastName || "";
             setAuthor(fname + " " + lname);
@@ -308,7 +312,16 @@ export default function ViewBlog(){
 
                 <div className="mb-6">
                     <p className="text-xl font-semibold text-gray-800 dark:text-white">Related Code Templates:</p>
-                    <p className="text-lg text-gray-600 dark:text-gray-400">{templates}</p>
+                    <ul className="flex space-x-4">
+                        {templates.map((template) => (
+                            <li key={template.id}>
+                                <Link href={`/codeTemplates/${template.id}`} className="hover:text-blue-500 hover:underline">
+                                    {template.title}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+
                 </div>
 
                 <Spacer y={10}/>

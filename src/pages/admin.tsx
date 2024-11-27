@@ -129,8 +129,21 @@ export default function Admin() {
 
     return (
         <Layout>
-            <h1>Admin Page</h1>
-            <p>Welcome, Admin!</p>
+            <div
+                className={`py-6 px-4 rounded-lg shadow-md mb-8 ${
+                    theme === 'dark'
+                        ? 'bg-gradient-to-r from-gray-600 via-gray-800 to-black text-gray-200'
+                        : 'bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 text-gray-800'
+                }`}
+            >
+                <h1
+                    className={`text-5xl font-bold mb-2 text-center ${
+                        theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                    }`}
+                >
+                    Admin Page
+                </h1>
+            </div>
 
             <h2 className={`text-4xl font-semibold mb-3 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>Reported Blogs </h2>
             <Table
