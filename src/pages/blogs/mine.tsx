@@ -10,9 +10,9 @@ interface Blog {
   voteCount: number;
 }
 
-export default function Blogs() {
+export default function Mine() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [isLoggedin, setIsLoggedIn] = useState(false);
+  const [myId, setMyId] = useState('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -22,8 +22,8 @@ export default function Blogs() {
   const pageSize = 12;
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if(token) setIsLoggedIn(true);
+    const storedId = localStorage.getItem('userId');
+    if(storedId) setMyId(storedId);
   }, []);
 
   useEffect(() => {
@@ -33,15 +33,21 @@ export default function Blogs() {
   async function fetchBlogs(page: number, query: string, searchBy: string) {
     setLoading(true);
     setError(null);
+    const token = localStorage.getItem('token');
     try {
       const res = await fetch(
-        `/api/blogs?page=${page}&pageSize=${pageSize}&${searchBy}=${query}`,
-        { headers: { "Cache-Control": "no-cache" } }
+        `/api/blogs/mine?page=${page}&pageSize=${pageSize}&${searchBy}=${query}`,
+        { 
+            headers: {
+                "Cache-Control": "no-cache",
+                "Authorization": `Bearer ${token}`,
+                }, 
+            }
       );
       const data = await res.json();
   
       if (res.ok) {
-        setBlogs(data.blogsSortedByVote?.length ? data.blogsSortedByVote : []);
+        setBlogs(data.blogs?.length ? data.blogs : []);
         setTotalPages(data.pagination?.totalBlogPages || 1);
       } else {
         setBlogs([]);
@@ -66,8 +72,8 @@ export default function Blogs() {
   return (
     <Layout>
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <h1 className="text-4xl font-bold mb-6 text-center">Blogs</h1>
-        <div className="flex mb-6 justify-center items-center space-x-4">
+        <h1 className="text-4xl font-bold mb-6 text-center">My Blogs</h1>
+        {/* <div className="flex mb-6 justify-center items-center space-x-4">
             <input
             type="text"
             placeholder="Search blogs..."
@@ -85,18 +91,7 @@ export default function Blogs() {
             <option value="content">Content</option>
             <option value="codeTemplates">Code Templates</option>
             </select>
-
-            {isLoggedin && (
-                <div className="flex space-x-4 ml-4">
-                    <Link href="/blogs/create">
-                    <Button color="primary">Create Blog</Button>
-                    </Link>
-                    <Link href="/blogs/mine">
-                    <Button color="success">My Blogs</Button>
-                    </Link>
-                </div>
-            )}
-        </div>
+        </div> */}
 
         {loading && <div className="text-center text-gray-500">Loading...</div>}
         {error && <div className="text-center text-red-500">{error}</div>}

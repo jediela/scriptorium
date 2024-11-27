@@ -94,6 +94,34 @@ export default function EditBlog(){
         }
     }
 
+    async function deleteBlog() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error("No token found, unable to delete blog");
+            return;
+        }
+        try {
+            const response = await fetch(`/api/blogs/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                toast.error("Error deleting blog:");
+            } 
+            else {
+                toast.success("Blog deleted successfully");
+                setTimeout(() => {
+                    router.push('/blogs');
+                }, 1000);
+            }
+        } catch (error) {
+            console.error("An error occurred while deleting the blog:", error);
+        }
+    }
+    
     function validateTitle(title: string){
         if(title === ""){
             setTitleError("Blog title is required");
@@ -241,6 +269,7 @@ export default function EditBlog(){
 
                 <div className="flex gap-4">
                     <Button type="submit" color="primary" size="lg">Save Changes</Button>
+                    <Button color="danger" size="lg" onClick={() => deleteBlog()}>Delete Blog</Button>
                 </div>
 
             </form>
