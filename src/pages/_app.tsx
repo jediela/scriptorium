@@ -6,16 +6,14 @@ import { Slide, ToastContainer, toast } from "react-toastify";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import 'react-toastify/dist/ReactToastify.css';
+import { AppProps } from "next/app";
 
-export default function App({ Component, pageProps }) {
+export default function App({ Component, pageProps }: AppProps) {
   const snackbarRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleRouteChange = () => {
-      if (snackbarRef.current) {
-        snackbarRef.current.closeSnackbar();
-      }
       toast.dismiss();
     };
     router.events.on("routeChangeStart", handleRouteChange);

@@ -3,6 +3,17 @@
 echo "Installing dependencies..."
 npm install
 
+docker build -t python-executor ./docker/python
+docker build -t node-executor ./docker/node
+docker build -t java-executor ./docker/java
+docker build -t cpp-executor ./docker/cpp
+docker build -t csharp-executor ./docker/csharp
+docker build -t php-executor ./docker/php
+docker build -t swift-executor ./docker/swift
+docker build -t rust-executor ./docker/rust
+docker build -t perl-executor ./docker/perl
+docker build -t haskell-executor ./docker/haskell
+
 echo "Running database migrations..."
 npx prisma migrate dev
 

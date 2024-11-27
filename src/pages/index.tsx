@@ -41,7 +41,7 @@ export default function Index() {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Write, execute, and test your code directly on the platform. No setup required.
                 </p>
-                <Link href="/execute" className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg">
+                <Link href="/code-execution" className="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg">
                     Start Coding
                 </Link>
               </div>
