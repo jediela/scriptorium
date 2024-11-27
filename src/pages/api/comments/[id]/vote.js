@@ -3,7 +3,7 @@ import prisma, { checkVotedComment, getComment } from "@/utils/db";
 
 export default async function handler(req, res) {
     // Add vote
-    if (req.method !== "POST"){
+    if (req.method === "POST"){
         const user = await authenticate(req, res);
         if (!user) {
             return res.status(401).json({ error: "Unauthorized: You need to be logged in to perform this action." });
@@ -67,27 +67,28 @@ export default async function handler(req, res) {
 
     // Remove vote
     else if (req.method === "DELETE"){
+        const user = await authenticate(req, res);
         const { id: commentId } = req.query;
         if (!commentId){
             return res.status(400).json({ error: "comment ID is required" });
         }
-        const comment = await getComment(commentId);
+        const comment = await getComment(Number(commentId));
         if (!comment){
             return res.status(404).json({ error: "comment not found." });
         }
         try {
-            const existingVote = await checkVotedcomment(user.id, Number(commentId));            
+            const existingVote = await checkVotedComment(Number(user.id), Number(commentId));            
             if (!existingVote) {
                 return res.status(404).json({ error: "Vote not found." });
             }
             await prisma.vote.delete({
                 where: {
-                    id: existingVote.id,
+                    id: Number(existingVote.id),
                 },
             });
             return res.status(200).json({ message: "Vote removed successfully" });
         } catch (error) {
-            return res.status(500).json({ error: "Error removing vote" });
+            return res.status(500).json({ error });
         }
     }
     else{

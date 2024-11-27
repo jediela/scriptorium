@@ -1,3 +1,4 @@
+import CommentSection from "@/components/CommentSection";
 import CustomDivider from "@/components/CustomDivider";
 import Layout from "@/components/Layout";
 import {Image, Button, Tooltip, Spacer, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
@@ -167,7 +168,7 @@ export default function ViewBlog(){
             setUpvoteIcon(UPVOTE_ICON);
             setDownvoteIcon(DOWNVOTE_ICON);
         }
-    } 
+    }
 
     async function upvoteBlog() {
         try {
@@ -350,15 +351,6 @@ export default function ViewBlog(){
                                     onClick={downvoteBlog}
                                 />
                             </Tooltip>
-                            <Spacer x={8} />
-                            <Tooltip content="Comment" showArrow={true} delay={0} closeDelay={0} color="primary" className="text-white rounded-md p-2 shadow-lg">
-                                <Image
-                                    width={40}
-                                    src="/icons/comment.svg"
-                                    className="opacity-100 border-3 border-black"
-                                    alt="Comment Icon"
-                                />
-                            </Tooltip>
                         </div>
 
                         <Popover 
@@ -407,7 +399,9 @@ export default function ViewBlog(){
                 )}
 
                 <div>
-                    <p className="text-xl font-semibold text-gray-800 dark:text-white">Comments</p>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Comments</h3>
+                    <Spacer y={2}/>
+                    <CommentSection/>
                 </div>
 
             </div>

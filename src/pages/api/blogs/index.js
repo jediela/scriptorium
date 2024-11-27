@@ -54,6 +54,7 @@ export default async function handler(req, res) {
                 // Total counts for blogs and comments
                 const totalBlogs = await prisma.blog.count({
                     where: {
+                        isHidden: false,
                         OR: [
                             { isHidden: false },
                             { userId: userId ? parseInt(userId) : undefined }
@@ -145,7 +146,7 @@ export default async function handler(req, res) {
             // Specified search
             else {                
             try {
-                let where = {};
+                let where = { isHidden: false };
             
                 if (title) {
                   where.title = { contains: title };

@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@nextui-org/react";
 
 interface Blog {
+  isHidden: boolean;
   id: number;
   title: string;
   content: string;
@@ -48,7 +49,7 @@ export default function Mine() {
   
       if (res.ok) {
         setBlogs(data.blogs?.length ? data.blogs : []);
-        setTotalPages(data.pagination?.totalBlogPages || 1);
+        setTotalPages(data.pagination?.totalPages || 1);
       } else {
         setBlogs([]);
         setError(data.message || "Failed to fetch blogs");
@@ -73,7 +74,7 @@ export default function Mine() {
     <Layout>
       <div className="max-w-5xl mx-auto px-4 py-6">
         <h1 className="text-4xl font-bold mb-6 text-center">My Blogs</h1>
-        {/* <div className="flex mb-6 justify-center items-center space-x-4">
+        <div className="flex mb-6 justify-center items-center space-x-4">
             <input
             type="text"
             placeholder="Search blogs..."
@@ -91,30 +92,38 @@ export default function Mine() {
             <option value="content">Content</option>
             <option value="codeTemplates">Code Templates</option>
             </select>
-        </div> */}
+        </div>
 
         {loading && <div className="text-center text-gray-500">Loading...</div>}
         {error && <div className="text-center text-red-500">{error}</div>}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogs.map((blog) => (
-            <div
-              key={blog.id}
-              className="border rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-            >
-              <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {blog.content.slice(0, 100)}...
-              </p>
-              <Link
-                href={`/blogs/${blog.id}`}
-                className="text-blue-500 hover:underline font-medium"
-              >
-                Read More
-              </Link>
-            </div>
-          ))}
-        </div>
+  {blogs.map((blog) => (
+    <div
+      key={blog.id}
+      className="border rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+    >
+      <h2
+        className={`text-xl font-semibold mb-2 ${
+          blog.isHidden ? "text-red-500" : ""
+        }`}
+      >
+        {blog.title}
+        {blog.isHidden && " *"}
+      </h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-4">
+        {blog.content.slice(0, 100)}...
+      </p>
+      <Link
+        href={`/blogs/${blog.id}`}
+        className="text-blue-500 hover:underline font-medium"
+      >
+        Read More
+      </Link>
+    </div>
+  ))}
+</div>
+
 
         <div className="flex justify-center items-center mt-8">
           <button
