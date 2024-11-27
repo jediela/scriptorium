@@ -1,24 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 import { Editor } from '@monaco-editor/react';
-import { useRouter } from 'next/router';
 
 export default function CodeExecution() {
+  const [code, setCode] = useState<string>('');
   const [input, setInput] = useState<string>('');
   const [output, setOutput] = useState<string>('');
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const { theme } = useTheme();
-  
-  const router = useRouter();
-  const { code: initialCode, language: initialLanguage } = router.query;
-  const [code, setCode] = useState<string>(initialCode as string || '');
-  const [language, setLanguage] = useState<string>(initialLanguage as string || 'javascript');
-  const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
-
 
   const languageOptions = [
     { key: 'javascript', name: 'JavaScript' },
@@ -31,8 +24,21 @@ export default function CodeExecution() {
     { key: 'rust', name: 'Rust' },
     { key: 'perl', name: 'Perl' },
     { key: 'haskell', name: 'Haskell' },
-    { key: 'dart', name: 'Dart' },
   ];
+
+  const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
+  const [language, setLanguage] = useState('javascript');
+
+  useEffect(() => {
+    const storedTemplate = localStorage.getItem('codeTemplate');
+    if (storedTemplate) {
+      const template = JSON.parse(storedTemplate);
+      setCode(template.code);
+      setLanguage(template.language);
+      setSelectedLanguage(new Set([template.language]));
+      localStorage.removeItem('codeTemplate');
+    }
+  }, []);
 
   const handleLanguageChange = (keys: any) => {
     setSelectedLanguage(keys);
