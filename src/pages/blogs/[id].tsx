@@ -1,12 +1,18 @@
+import CommentSection from "@/components/CommentSection";
 import CustomDivider from "@/components/CustomDivider";
 import Layout from "@/components/Layout";
-import {Image, Button, Tooltip, Spacer, Input, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
+import {Image, Button, Tooltip, Spacer, Popover, PopoverContent, PopoverTrigger, Textarea} from "@nextui-org/react";
 import { Vote } from "@prisma/client";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
+interface CodeTemplate {
+    id: number;
+    title: string;
+}
 
 export default function ViewBlog(){
     const router = useRouter();
@@ -19,10 +25,11 @@ export default function ViewBlog(){
     const [downvoteIcon, setDownvoteIcon] = useState(DOWNVOTE_ICON);
     const [userVoteValue, setUserVoteValue] = useState(0);
     const [popoverVisible, setPopoverVisible] = useState(false);
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [tags, setTags] = useState<string[]>([]);
-    const [templates, setTemplates] = useState<string[]>([]);
+    const [templates, setTemplates] = useState<CodeTemplate[]>([]);
     const [author, setAuthor] = useState('');
     const [authorId, setAuthorId] = useState();
     const [report, setReport] = useState('');
@@ -31,20 +38,26 @@ export default function ViewBlog(){
     const [loggedIn, setLoggedIn] = useState(false);
     const [votes, setVotes] = useState<Vote[]>([]);
     const [canEditBlog, setCanEditBlog] = useState(false);
-    const [blogHidden, setBlogHidden] = useState(false);
+    const [blogHidden, setBlogHidden] = useState(false);    
+    const [total, setTotal] = useState(0);
+
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            setLoggedIn(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (loggedIn) {
+            fetchUser();
+        }
+    }, [loggedIn]);
 
     useEffect(() => {
         if (id) {
             fetchBlog();
         }
-        if (localStorage.getItem('token')) {
-            setLoggedIn(true);
-        }
-    }, [id, authorId]);
-    
-    useEffect(() => {
-        checkExistingVote();
-    }, [votes]);
+    }, [id, userVoteValue]);
 
     useEffect(() => {
         if (userVoteValue === 1) {
@@ -58,6 +71,48 @@ export default function ViewBlog(){
             setDownvoteIcon(DOWNVOTE_ICON);
         }
     }, [userVoteValue]);
+
+    useEffect(() => {
+        checkExistingVote();
+    }, [votes]);
+
+    async function hideBlog(hide: boolean, message: string) {
+        const token = localStorage.getItem('token');
+        await fetch(`/api/blogs/${id}`,{
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                isHidden: hide
+            }),  
+        });
+        toast.info(message);
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
+
+    async function fetchUser() {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch('/api/users/me', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.isAdmin) {
+                    setIsAdmin(true);
+                }
+                else setIsAdmin(false);
+            } else {
+                throw new Error("Failed to fetch user data");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     async function reportBlog() {
         setTouched({report: true});
@@ -122,7 +177,7 @@ export default function ViewBlog(){
             setUpvoteIcon(UPVOTE_ICON);
             setDownvoteIcon(DOWNVOTE_ICON);
         }
-    } 
+    }
 
     async function upvoteBlog() {
         try {
@@ -195,12 +250,12 @@ export default function ViewBlog(){
                 return;
             }
             const data = await response.json();
+            setTotal(data.voteValue);
             setTitle(data.title);
             setContent(data.content);
             const resTags = data.tags.map((tag: { name: any; }) => tag.name).join(", ");
             setTags(resTags);
-            const resTemplates = data.codeTemplates.map((codeTemplate: { title: any; }) => codeTemplate.title).join(", ");
-            setTemplates(resTemplates);
+            setTemplates(data.codeTemplates);
             const fname = data.user.firstName;
             const lname = data.user.lastName || "";
             setAuthor(fname + " " + lname);
@@ -210,9 +265,12 @@ export default function ViewBlog(){
             setVotes(blogVotes);
             const hidden = data.isHidden;
             setBlogHidden(hidden);
-            if (hidden && localStorage.getItem('userId') !== String(ownerId)) {
+            if (hidden && isAdmin === null) {
+                return;
+            }            
+            if (hidden && localStorage.getItem('userId') !== String(ownerId) && !isAdmin) {
                 router.back();
-            }
+            }            
             if(localStorage.getItem('userId') === String(ownerId) && !hidden){
                 setCanEditBlog(true);
             } 
@@ -230,11 +288,21 @@ export default function ViewBlog(){
                         <h2>**Blog has been hidden by admins.**</h2>
                     </div>
                 )}                
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+                <div className="flex flex-col items-start mb-4">
                     <h1 className="text-4xl font-semibold text-gray-900 dark:text-white mb-4">{title}</h1>
+                    {isAdmin && !blogHidden && (
+                        <Button onClick={() => hideBlog(true, "Blog hidden")} color="danger" className="mb-3 ml-0">
+                            Hide Blog
+                        </Button>
+                    )}
+                    {isAdmin && blogHidden && (
+                        <Button onClick={() => hideBlog(false, "Blog unhidden")} color="warning" className="mb-3 ml-0">
+                            Unhide Blog
+                        </Button>
+                    )}
                     {canEditBlog && (
                         <Link href={`${router.asPath}/edit`} passHref>
-                            <Button color="secondary" className="ml-0 sm:ml-auto">
+                            <Button color="secondary" className="ml-0">
                                 Edit Blog
                             </Button>
                         </Link>
@@ -258,7 +326,16 @@ export default function ViewBlog(){
 
                 <div className="mb-6">
                     <p className="text-xl font-semibold text-gray-800 dark:text-white">Related Code Templates:</p>
-                    <p className="text-lg text-gray-600 dark:text-gray-400">{templates}</p>
+                    <ul className="flex space-x-4">
+                        {templates.map((template) => (
+                            <li key={template.id}>
+                                <Link href={`/code-templates/${template.id}`} className="hover:text-blue-500 hover:underline">
+                                    {template.title}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+
                 </div>
 
                 <Spacer y={10}/>
@@ -267,7 +344,7 @@ export default function ViewBlog(){
 
                 {loggedIn && (
                     <>
-                        <div className="flex">
+                        <div className="flex items-center">
                             <Tooltip content="Upvote Blog" showArrow={true} delay={0} closeDelay={0} color="success" className="text-white rounded-md p-2 shadow-lg">
                                 <Image
                                     width={40}
@@ -287,15 +364,7 @@ export default function ViewBlog(){
                                     onClick={downvoteBlog}
                                 />
                             </Tooltip>
-                            <Spacer x={8} />
-                            <Tooltip content="Comment" showArrow={true} delay={0} closeDelay={0} color="primary" className="text-white rounded-md p-2 shadow-lg">
-                                <Image
-                                    width={40}
-                                    src="/icons/comment.svg"
-                                    className="opacity-100 border-3 border-black"
-                                    alt="Comment Icon"
-                                />
-                            </Tooltip>
+                            <h1 className="ml-2 text-2xl font-bold">{total}</h1>
                         </div>
 
                         <Popover 
@@ -328,9 +397,10 @@ export default function ViewBlog(){
                                             onChange={(e) => {
                                                 setReport(e.target.value);
                                                 if (!touched.report) setTouched((prev) => ({ ...prev, report: true }));
-                                            }}                                        />
+                                            }}                                        
+                                        />
                                         <div className="flex justify-center w-full mt-2">
-                                            <Button size="sm" className="w-32" color="danger" onClick={reportBlog}>Submit Report</Button>
+                                            <Button size="sm" className="w-32" color="primary" onClick={reportBlog}>Submit Report</Button>
                                         </div>
                                     </div>
                                 )}
@@ -344,7 +414,9 @@ export default function ViewBlog(){
                 )}
 
                 <div>
-                    <p className="text-xl font-semibold text-gray-800 dark:text-white">Comments</p>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Comments</h3>
+                    <Spacer y={2}/>
+                    <CommentSection/>
                 </div>
 
             </div>

@@ -44,14 +44,14 @@ export default async function handler(req, res) {
     }
 
     const dataToUpdate = {
-        email: email || user.email,
-        password: password ? await hashPassword(password) : user.password,
-        firstName: firstName || user.firstName,
-        lastName: lastName || user.lastName,
-        avatar: avatar || user.avatar,
-        phoneNumber: phoneNumber || user.phoneNumber,
-        isAdmin: isAdmin ?? user.isAdmin,
-    };
+        email: email !== undefined ? email : undefined,
+        password: password ? await hashPassword(password) : undefined,
+        firstName: firstName !== undefined ? firstName : undefined,
+        lastName: lastName !== undefined ? lastName : undefined,
+        avatar: avatar !== undefined ? avatar : undefined,
+        phoneNumber: phoneNumber !== undefined ? phoneNumber : undefined,
+        isAdmin: isAdmin !== undefined ? isAdmin : undefined,
+    };    
     
     try{
         const updatedUser = await prisma.user.update({

@@ -16,8 +16,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         blog = await prisma.blog.findUnique({
             where: { id: rid },
-            include: { user: true, codeTemplates: true, tags: true, comments: true, reports: true, Vote: true },
+            include: {
+                user: true,
+                codeTemplates: true,
+                tags: true,
+                comments: {
+                    where: {
+                        isHidden: false,
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                email: true,
+                            },
+                        },
+                    },
+                },
+                reports: true,
+                Vote: true,
+            },
         });
+
 
         if (!blog) {
             return res.status(404).json({ error: "Blog not found." });
