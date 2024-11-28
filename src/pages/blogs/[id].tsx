@@ -329,7 +329,7 @@ export default function ViewBlog(){
                     <ul className="flex space-x-4">
                         {templates.map((template) => (
                             <li key={template.id}>
-                                <Link href={`/codeTemplates/${template.id}`} className="hover:text-blue-500 hover:underline">
+                                <Link href={`/code-templates/${template.id}`} className="hover:text-blue-500 hover:underline">
                                     {template.title}
                                 </Link>
                             </li>

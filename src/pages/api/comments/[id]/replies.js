@@ -15,6 +15,7 @@ export default async function handler(req, res) {
           replies: {
             include: {
               user: { select: { id: true, email: true } },
+              Vote: { select: { userId: true, value: true } },
             },
             orderBy: { createdAt: "asc" },
           },
@@ -25,7 +26,6 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Comment not found" });
       }
 
-      // Return only the replies
       return res.status(200).json({ replies: parentComment.replies });
     } catch (error) {
       console.error("Error fetching replies:", error);

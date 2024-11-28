@@ -5,9 +5,10 @@ interface ReplyModalProps {
     isOpen: boolean;
     onClose: () => void;
     commentId: number | null;
+    onReplySubmit: () => void;
 }
 
-export default function ReplyModal({ isOpen, onClose, commentId, }: ReplyModalProps){
+export default function ReplyModal({isOpen, onClose, commentId, onReplySubmit}: ReplyModalProps) {
     const [replyContent, setReplyContent] = useState('');
     const [touched, setTouched] = useState(false);
     const [reportError, setReportError] = useState('');
@@ -40,6 +41,7 @@ export default function ReplyModal({ isOpen, onClose, commentId, }: ReplyModalPr
                 }),  
             });        
             toast.success('Reply processed');
+            onReplySubmit();
             onClose();
           } catch (error) {
             console.error(error);

@@ -26,7 +26,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <NextUIProvider>
       <SnackbarProvider maxSnack={1} ref={snackbarRef}>
         <ToastContainer position='top-center' autoClose={1000} transition={Slide} limit={1} pauseOnFocusLoss={false}/>
-        <ThemeProvider attribute="class" defaultTheme="system">
+        <ThemeProvider attribute="class" defaultTheme="dark">
           <Component {...pageProps} />
         </ThemeProvider>
       </SnackbarProvider>

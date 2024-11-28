@@ -67,37 +67,41 @@ export default function Blogs() {
     <Layout>
       <div className="max-w-5xl mx-auto px-4 py-6">
         <h1 className="text-4xl font-bold mb-6 text-center">Blogs</h1>
-        <div className="flex mb-6 justify-center items-center space-x-4">
-            <input
+        <div className="flex flex-col sm:flex-row mb-6 justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 px-4 sm:px-0">
+          <input
             type="text"
             placeholder="Search blogs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="border px-4 py-2 rounded-lg w-1/2"
-            />
-            <select
+            className="border px-4 py-2 rounded-lg w-full sm:w-1/2"
+          />
+          
+          <select
             value={searchBy}
             onChange={(e) => setSearchBy(e.target.value)}
-            className="ml-4 border px-4 py-2 rounded-lg"
-            >
+            className="ml-0 sm:ml-4 border px-4 py-2 rounded-lg w-full sm:w-auto"
+          >
             <option value="title">Title</option>
             <option value="tags">Tags</option>
             <option value="content">Content</option>
             <option value="codeTemplates">Code Templates</option>
-            </select>
+          </select>
 
-            {isLoggedin && (
-                <div className="flex space-x-4 ml-4">
-                    <Link href="/blogs/create">
-                    <Button color="primary">Create Blog</Button>
-                    </Link>
-                    <Link href="/blogs/mine">
-                    <Button color="success">My Blogs</Button>
-                    </Link>
-                </div>
-            )}
+          {isLoggedin && (
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:ml-4 w-full sm:w-auto">
+              <Link href="/blogs/create">
+                <Button color="primary" className="w-full sm:w-auto">
+                  Create Blog
+                </Button>
+              </Link>
+              <Link href="/blogs/mine">
+                <Button color="success" className="w-full sm:w-auto">
+                  My Blogs
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
-
         {loading && <div className="text-center text-gray-500">Loading...</div>}
         {error && <div className="text-center text-red-500">{error}</div>}
 

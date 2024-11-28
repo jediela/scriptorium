@@ -321,7 +321,7 @@ async function upvoteComment(commentId: number) {
                                             />
                                         </Tooltip>
                                     </div>
-                                        <h1 className="ml-2 text-2xl font-bold">{comment.voteValue}</h1>
+                                        {/* <h1 className="ml-2 text-2xl font-bold">{comment.voteValue}</h1> */}
                                         <Button
                                             size="sm"
                                             color="danger"
@@ -335,7 +335,6 @@ async function upvoteComment(commentId: number) {
                                         </Button>
                                 </div>
                             )}
-
                             <Replies commentId={comment.id} />
                         </div>
                     ))
