@@ -113,10 +113,20 @@ const CodeTemplates = () => {
                     ))}
                   </TableCell>
                   <TableCell>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => router.push(`/code-templates/${template.id}`)}
+                    >
+                      View
+                    </Button>
                     <Button size="sm" onClick={() => router.push(`/edit-template?id=${template.id}`)}>
                       Edit
                     </Button>
-                    <Button size="sm" onClick={() => handleForkTemplate(template.id)}>
+                    <Button
+                      size="sm"
+                      onClick={() => router.push(`/fork-template?id=${template.id}`)}
+                    >
                       Fork
                     </Button>
                   </TableCell>
