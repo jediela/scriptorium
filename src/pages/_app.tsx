@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { AppProps } from 'next/app';
 import 'react-toastify/dist/ReactToastify.css';
+import { AppProps } from "next/app";
 
 export default function App({ Component, pageProps }: AppProps) {
   const snackbarRef = useRef(null);

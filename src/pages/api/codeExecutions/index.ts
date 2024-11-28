@@ -1,6 +1,7 @@
-import { executeCode } from '@/utils/executeCode';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { executeCode } from '../../../utils/executeCode';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method not allowed' });
@@ -16,6 +17,10 @@ export default async function handler(req, res) {
     const output = await executeCode(language, code, input || '');
     return res.status(200).json({ output });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    if (error instanceof Error) {
+      return res.status(500).json({ error: error.message });
+    } else {
+      return res.status(500).json({ error: 'An unknown error occurred' });
+    }
   }
 }
