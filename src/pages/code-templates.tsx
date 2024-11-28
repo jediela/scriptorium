@@ -1,399 +1,151 @@
-// pages/code-templates.tsx
 import React, { useEffect, useState } from 'react';
-import PlainLayout from '@/components/PlainLayout';
-import { useTheme } from 'next-themes';
-import { Button, Input, Dropdown, DropdownItem, DropdownMenu, 
-        DropdownTrigger, Modal, ModalContent, ModalHeader, 
-        ModalBody, ModalFooter, Table, TableHeader, 
-        TableBody, TableColumn, TableRow, TableCell, Spinner,
-        } from '@nextui-org/react';
-import { Editor } from '@monaco-editor/react';
+import { useRouter } from 'next/router';
+import { Button, Input, Dropdown, Modal, Table, Spinner, Badge, TableHeader, TableBody, TableColumn, TableRow, TableCell, ModalContent, ModalBody, ModalHeader, ModalFooter} from '@nextui-org/react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Layout from '@/components/Layout';
+import { useTheme } from 'next-themes';
 
-import { useRouter } from 'next/router';
-
-export default function CodeTemplates() {
-  const { theme } = useTheme();
+const CodeTemplates = () => {
   const router = useRouter();
+  const { theme } = useTheme();
 
   const [templates, setTemplates] = useState<any[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [currentTemplate, setCurrentTemplate] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    language: '',
-    title: '',
-    code: '',
-    isPublic: false,
-  });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
-  const editorTheme = theme === 'dark' ? 'vs-dark' : 'light';
-
-  useEffect(() => {
-    // Fetch current user data
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await fetch('/api/users/me', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          setCurrentUser(userData);
-        } else {
-          // Handle unauthorized access
-          console.error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
+  const [showForkModal, setShowForkModal] = useState<boolean>(false);
+  const [forkTemplateId, setForkTemplateId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Set supported languages
-    setLanguages([
-      'javascript',
-      'python',
-      'java',
-      'cpp',
-      'csharp',
-      'php',
-      'swift',
-      'rust',
-      'perl',
-      'haskell',
-    ]);
-  }, []);
-
-  useEffect(() => {
-    const fetchTemplates = async () => {
-      setIsLoading(true);
-      try {
-        const queryParams = new URLSearchParams();
-        if (selectedLanguage && selectedLanguage !== 'all') {
-          queryParams.append('language', selectedLanguage);
-        }
-        if (searchQuery) {
-          queryParams.append('search', searchQuery);
-        }
-
-        const response = await fetch(`/api/codeTemplates?${queryParams.toString()}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setTemplates(data.templates);
-        } else {
-          console.error('Failed to fetch templates');
-        }
-      } catch (error) {
-        console.error('Error fetching templates:', error);
-      }
-      setIsLoading(false);
-    };
-
     fetchTemplates();
-  }, [selectedLanguage, searchQuery]);
+  }, [searchQuery, selectedTags]);
 
-  const handleLanguageFilterChange = (keys: Set<React.Key>) => {
-    setSelectedLanguage(Array.from(keys).join(''));
-  };
-
-  const handleUseTemplate = (template: any) => {
-    localStorage.setItem('codeTemplate', JSON.stringify(template));
-    router.push('/code-execution');
-  };
-
-  const handleEditTemplate = (template: any) => {
-    setIsEditing(true);
-    setCurrentTemplate(template);
-    setFormData({
-      language: template.language,
-      title: template.title,
-      code: template.code,
-      isPublic: template.isPublic,
-    });
-    setShowModal(true);
-  };
-
-  const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
-
+  const fetchTemplates = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch(`/api/codeTemplates/${templateId}`, {
-        method: 'DELETE',
+      const queryParams = new URLSearchParams();
+      if (searchQuery) {
+        queryParams.append('search', searchQuery);
+      }
+      if (selectedTags.length > 0) {
+        queryParams.append('tags', selectedTags.join(','));
+      }
+
+      const response = await fetch(`/api/codeTemplates?${queryParams.toString()}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-
       if (response.ok) {
-        setTemplates(templates.filter((t) => t.id !== templateId));
-        toast.success('Template deleted successfully', { theme });
+        const data = await response.json();
+        setTemplates(data.templates);
       } else {
-        toast.error('Failed to delete template', { theme });
+        toast.error('Failed to fetch templates');
       }
     } catch (error) {
-      console.error('Error deleting template:', error);
-      toast.error('Error deleting template', { theme });
+      console.error(error);
+      toast.error('An error occurred while fetching templates');
     }
+    setIsLoading(false);
   };
 
-  const handleSaveTemplate = async () => {
-    if (!formData.title || !formData.language || !formData.code) {
-      toast.error('Please fill in all required fields', { theme });
-      return;
-    }
+  const handleForkTemplate = (templateId: number) => {
+    setForkTemplateId(templateId);
+    setShowForkModal(true);
+  };
 
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `/api/codeTemplates/${currentTemplate.id}` : '/api/codeTemplates';
-
+  const handleForkSubmit = async () => {
+    if (!forkTemplateId) return;
     try {
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`/api/codeTemplates/${forkTemplateId}/fork`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify(formData),
       });
-
       if (response.ok) {
-        const updatedTemplate = await response.json();
-        if (isEditing) {
-          setTemplates(
-            templates.map((t) => (t.id === updatedTemplate.id ? updatedTemplate : t))
-          );
-          toast.success('Template updated successfully', { theme });
-        } else {
-          setTemplates([updatedTemplate, ...templates]);
-          toast.success('Template created successfully', { theme });
-        }
-        setShowModal(false);
-        setFormData({ language: '', title: '', code: '', isPublic: false });
-        setIsEditing(false);
-        setCurrentTemplate(null);
+        toast.success('Template forked successfully');
+        setShowForkModal(false);
+        fetchTemplates();
       } else {
-        toast.error('Failed to save template', { theme });
+        toast.error('Failed to fork template');
       }
     } catch (error) {
-      console.error('Error saving template:', error);
-      toast.error('Error saving template', { theme });
+      console.error(error);
+      toast.error('An error occurred while forking the template');
     }
   };
-
-  const handleCreateTemplate = () => {
-    setIsEditing(false);
-    setCurrentTemplate(null);
-    setFormData({ language: '', title: '', code: '', isPublic: false });
-    setShowModal(true);
-  };
-
-  const languageItems = [
-    { key: 'all', name: 'All Languages' },
-    ...languages.map((lang) => ({ key: lang, name: lang })),
-  ];  
 
   return (
-    <PlainLayout>
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        limit={1}
-        pauseOnFocusLoss={false}
-        theme={theme}
-      />
-      <div
-        className={`w-full max-w-5xl p-6 shadow-md rounded-lg flex flex-col items-center gap-4 mx-auto ${
-          theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
-        } border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}
-      >
-        <h2
-          className={`text-3xl font-semibold text-center mb-6 ${
-            theme === 'dark' ? 'text-white' : 'text-black'
-          }`}
-        >
-          Code Templates
-        </h2>
-
-        {/* Filters and Search */}
-        <div className="flex flex-wrap gap-4 items-center my-4 w-full justify-between">
-          <div className="flex gap-4">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button variant="shadow">
-                  {selectedLanguage === 'all' ? 'All Languages' : selectedLanguage}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Select Language"
-                selectionMode="single"
-                selectedKeys={new Set([selectedLanguage])}
-                onSelectionChange={handleLanguageFilterChange}
-                items={languageItems}
-              >
-                {(item) => (
-                  <DropdownItem key={item.key}>{item.name}</DropdownItem>
-                )}
-              </DropdownMenu>
-            </Dropdown>
-            <Input
-              placeholder="Search Templates"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              size="lg"
-            />
-          </div>
-          <Button variant="shadow" onClick={handleCreateTemplate}>
-            Create New Template
-          </Button>
+    <Layout>
+      <ToastContainer position="top-center" autoClose={2000} />
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Code Templates</h1>
+        <div className="flex justify-between items-center mb-4">
+          <Input
+            placeholder="Search templates..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full max-w-md"
+          />
+          <Button onClick={() => router.push('/create-template')}>Create New Template</Button>
         </div>
-
-        {/* Templates Table */}
         {isLoading ? (
-          <div className="flex justify-center items-center w-full h-64">
-            <Spinner size="lg" />
-          </div>
-        ) : templates.length > 0 ? (
-          <Table
-            aria-label="Code Templates"
-            selectionMode="none"
-            className={`${
-              theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
-            }`}
-          >
+          <Spinner />
+        ) : (
+          <Table>
             <TableHeader>
               <TableColumn>Title</TableColumn>
-              <TableColumn>Language</TableColumn>
-              <TableColumn>Visibility</TableColumn>
+              <TableColumn>Author</TableColumn>
+              <TableColumn>Tags</TableColumn>
               <TableColumn>Actions</TableColumn>
             </TableHeader>
             <TableBody>
               {templates.map((template) => (
                 <TableRow key={template.id}>
                   <TableCell>{template.title}</TableCell>
-                  <TableCell>{template.language}</TableCell>
-                  <TableCell>{template.isPublic ? 'Public' : 'Private'}</TableCell>
+                  <TableCell>{`${template.user.firstName} ${template.user.lastName}`}</TableCell>
                   <TableCell>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleUseTemplate(template)}
-                    >
-                      Use
+                    {template.tags.map((tag: { id: React.Key | null | undefined; name: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; }) => (
+                      <Badge key={tag.id}>{tag.name}</Badge>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    <Button size="sm" onClick={() => router.push(`/edit-template?id=${template.id}`)}>
+                      Edit
                     </Button>
-                    {currentUser &&
-                      (currentUser.id === template.userId ||
-                        currentUser.role === 'admin') && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditTemplate(template)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            color="danger"
-                            onClick={() => handleDeleteTemplate(template.id)}
-                          >
-                            Delete
-                          </Button>
-                        </>
-                      )}
+                    <Button size="sm" onClick={() => handleForkTemplate(template.id)}>
+                      Fork
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        ) : (
-          <p>No templates found.</p>
         )}
-
-        {/* Create/Edit Template Modal */}
-        <Modal isOpen={showModal} onClose={() => setShowModal(false)} backdrop="blur">
+      </div>
+      {showForkModal && (
+        <Modal isOpen={showForkModal} onClose={() => setShowForkModal(false)}>
           <ModalContent>
-            <ModalHeader>{isEditing ? 'Edit Template' : 'Create New Template'}</ModalHeader>
+            <ModalHeader>Fork Template</ModalHeader>
             <ModalBody>
-              <Input
-                label="Title"
-                placeholder="Template Title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                fullWidth
-                required
-                size="lg"
-              />
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button variant="shadow">
-                    {formData.language || 'Select Language'}
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  aria-label="Select Language"
-                  selectionMode="single"
-                  selectedKeys={new Set([formData.language])}
-                  onSelectionChange={(keys) =>
-                    setFormData({ ...formData, language: Array.from(keys).join('') })
-                  }
-                >
-                  {languages.map((lang) => (
-                    <DropdownItem key={lang}>{lang}</DropdownItem>
-                  ))}
-                </DropdownMenu>
-              </Dropdown>
-              <div className="editor-container w-full max-w-xl mt-4">
-                <label className="editor-label text-sm font-medium mb-1">Code</label>
-                <Editor
-                  height="200px"
-                  language={formData.language || 'plaintext'}
-                  theme={editorTheme}
-                  value={formData.code}
-                  onChange={(value) => setFormData({ ...formData, code: value || '' })}
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                  }}
-                />
-              </div>
-              <label className="flex items-center mt-4">
-                <input
-                  type="checkbox"
-                  checked={formData.isPublic}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isPublic: e.target.checked })
-                  }
-                  className="mr-2"
-                />
-                Public Template
-              </label>
+              <p>Are you sure you want to fork this template?</p>
             </ModalBody>
             <ModalFooter>
-              <Button variant="ghost" onClick={() => setShowModal(false)}>
+              <Button onClick={() => setShowForkModal(false)}>
                 Cancel
               </Button>
-              <Button variant="shadow" onClick={handleSaveTemplate}>
-                {isEditing ? 'Update' : 'Create'}
+              <Button onClick={handleForkSubmit}>
+                Fork
               </Button>
             </ModalFooter>
           </ModalContent>
         </Modal>
-      </div>
-    </PlainLayout>
+      )}
+    </Layout>
   );
-}
+};
+
+export default CodeTemplates;
