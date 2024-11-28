@@ -56,6 +56,11 @@ const CodeTemplates = () => {
     setShowForkModal(true);
   };
 
+  const handleUseTemplate = (template: any) => {
+    localStorage.setItem('codeTemplate', JSON.stringify(template));
+    router.push('/code-execution');
+  };
+
   const handleForkSubmit = async () => {
     if (!forkTemplateId) return;
     try {
@@ -113,6 +118,13 @@ const CodeTemplates = () => {
                     ))}
                   </TableCell>
                   <TableCell>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleUseTemplate(template)}
+                    >
+                      Use
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
