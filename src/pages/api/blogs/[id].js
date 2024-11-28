@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     }
 
     // Check if authenticated user owns the blog
-    if (blog.userId !== user.id) {
+    if (!user.isAdmin && blog.userId !== user.id) {
         return res.status(403).json({ error: "You do not have permission to modify this blog." });
     }
 

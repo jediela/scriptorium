@@ -29,7 +29,7 @@ export async function getBlog(blogId: number) {
 export async function getComment(commentId: number) {
     try {
         const comment = await prisma.comment.findUnique({
-            where: { id: commentId }
+            where: { id: commentId },
         });
         return comment;
     } catch (error) {
@@ -42,13 +42,13 @@ export async function checkVotedComment(userId: number, commentId: number) {
     try {
         const existingVote = await prisma.vote.findFirst({
             where: {
-                userId: userId,
-                commentId: commentId,
+                userId,
+                commentId
             },
         });
         return existingVote;
     } catch (error) {
-        throw new Error("Error retrieving vote info.");
+        console.error(error);
     }
 }
 // True if user has reported the comment, false they haven't reported it
@@ -56,8 +56,8 @@ export async function checkReportedComment(userId: number, commentId: number) {
     try {
         const existingReport = await prisma.report.findFirst({
             where: {
-                userId: userId,
-                commentId: commentId,
+                userId,
+                commentId,
             },
         });
         return existingReport;
