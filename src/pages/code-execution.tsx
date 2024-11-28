@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Textarea, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
@@ -24,11 +24,21 @@ export default function CodeExecution() {
     { key: 'rust', name: 'Rust' },
     { key: 'perl', name: 'Perl' },
     { key: 'haskell', name: 'Haskell' },
-    { key: 'dart', name: 'Dart' },
   ];
 
   const [selectedLanguage, setSelectedLanguage] = useState(new Set(['javascript']));
   const [language, setLanguage] = useState('javascript');
+
+  useEffect(() => {
+    const storedTemplate = localStorage.getItem('codeTemplate');
+    if (storedTemplate) {
+      const template = JSON.parse(storedTemplate);
+      setCode(template.code);
+      setLanguage(template.language);
+      setSelectedLanguage(new Set([template.language]));
+      localStorage.removeItem('codeTemplate');
+    }
+  }, []);
 
   const handleLanguageChange = (keys: any) => {
     setSelectedLanguage(keys);
@@ -93,7 +103,7 @@ export default function CodeExecution() {
     <Layout>
       <form
         onSubmit={handleRunCode}
-        className={`w-full max-w-2xl p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${
+        className={`w-full p-6 shadow-md rounded-lg flex flex-col items-center gap-4 ${
           theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
         } border-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}
       >

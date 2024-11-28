@@ -53,7 +53,7 @@ export default function Index() {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   Create reusable code templates and share them with the community. Make coding faster and more efficient.
                 </p>
-                <Link href="/templates" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                <Link href="/code-templates" className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
                     Explore Templates
                 </Link>
               </div>
