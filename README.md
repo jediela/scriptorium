@@ -24,4 +24,4 @@ To set up and run the project, startup Docker and use the provided scripts:
 
    [./run.sh](./run.sh)
 
-Open the application in your browser: http://localhost:3000.
+3. Open the application in your browser: http://localhost:3000.
